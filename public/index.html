@@ -175,7 +175,7 @@
       });
       const data = await res.json();
       if (!res.ok) { showError("company", data.error || "Failed"); return; }
-      window.location.href = "/game";
+      window.location.href = '/game.html';
     } catch (e) {
       showError("company", "Network error");
     }
