@@ -305,4 +305,14 @@ router.get('/search-cities', async (req, res) => {
   }
 });
 
+// Admin: Get all players
+router.get('/admin/players', async (req, res) => {
+  try {
+    const result = await pool.query('SELECT id, username, email, personal_credit_score, current_company_id, created_at FROM players ORDER BY created_at DESC');
+    res.json(result.rows);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 module.exports = router;
