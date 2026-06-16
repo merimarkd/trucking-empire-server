@@ -6,91 +6,36 @@
   <title>Freight Empire</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      font-family: 'Segoe UI', Arial, sans-serif;
-      background: linear-gradient(135deg, #0d1117 0%, #161b22 50%, #0d1b2a 100%);
-      color: #c9d1d9;
-      overflow: hidden;
-      min-height: 100vh;
-    }
+    body { font-family: Segoe UI, Arial, sans-serif; background: linear-gradient(135deg, #0d1117 0%, #161b22 50%, #0d1b2a 100%); color: #c9d1d9; overflow: hidden; min-height: 100vh; }
     .grid { position: fixed; width: 100%; height: 100%; background-image: linear-gradient(rgba(88,166,255,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(88,166,255,0.05) 1px, transparent 1px); background-size: 50px 50px; z-index: 0; opacity: 0.3; }
     .glow { position: fixed; width: 500px; height: 500px; background: radial-gradient(circle, rgba(88,166,255,0.1), transparent); border-radius: 50%; filter: blur(80px); z-index: 0; }
     .glow1 { top: -200px; right: -200px; }
     .glow2 { bottom: -200px; left: -200px; }
     .container { width: 100vw; height: 100vh; display: flex; align-items: center; justify-content: center; position: relative; z-index: 1; }
-    .box {
-      background: linear-gradient(135deg, rgba(13,17,23,0.95) 0%, rgba(22,27,34,0.95) 100%);
-      border: 1px solid rgba(88,166,255,0.2);
-      border-radius: 8px;
-      padding: 60px 50px;
-      width: 90%;
-      max-width: 480px;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.5), inset 0 1px 0 rgba(88,166,255,0.1);
-      backdrop-filter: blur(10px);
-    }
+    .screen { display: none; width: 90%; max-width: 480px; }
+    .screen.active { display: block; }
+    .box { background: linear-gradient(135deg, rgba(13,17,23,0.95) 0%, rgba(22,27,34,0.95) 100%); border: 1px solid rgba(88,166,255,0.2); border-radius: 8px; padding: 60px 50px; box-shadow: 0 8px 32px rgba(0,0,0,0.5), inset 0 1px 0 rgba(88,166,255,0.1); }
     h1 { font-size: 2.2rem; color: #58a6ff; margin-bottom: 8px; font-weight: 400; letter-spacing: 1px; }
     p { color: #8b949e; font-size: 0.85rem; margin-bottom: 40px; text-transform: uppercase; letter-spacing: 2px; }
     label { display: block; color: #58a6ff; font-size: 0.8rem; margin-bottom: 8px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; }
-    input { 
-      width: 100%; 
-      padding: 12px 14px; 
-      margin-bottom: 20px; 
-      background: rgba(88,166,255,0.02); 
-      border: 1px solid rgba(88,166,255,0.15); 
-      color: #c9d1d9; 
-      border-radius: 6px; 
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      font-size: 0.95rem;
-      transition: all 0.3s;
-    }
+    input { width: 100%; padding: 12px 14px; margin-bottom: 20px; background: rgba(88,166,255,0.02); border: 1px solid rgba(88,166,255,0.15); color: #c9d1d9; border-radius: 6px; font-size: 0.95rem; transition: all 0.3s; }
     input::placeholder { color: rgba(139,148,158,0.6); }
-    input:focus { 
-      outline: none; 
-      border-color: rgba(88,166,255,0.4);
-      background: rgba(88,166,255,0.05);
-      box-shadow: 0 0 0 3px rgba(88,166,255,0.1);
-    }
-    button { 
-      width: 100%; 
-      padding: 12px 16px; 
-      background: linear-gradient(135deg, #1f6feb 0%, #388bfd 100%);
-      color: #ffffff; 
-      border: 1px solid rgba(88,166,255,0.3);
-      border-radius: 6px; 
-      font-weight: 600; 
-      cursor: pointer; 
-      text-transform: uppercase; 
-      font-size: 0.9rem;
-      letter-spacing: 1px;
-      transition: all 0.3s;
-      box-shadow: 0 4px 12px rgba(31,111,235,0.3);
-    }
-    button:hover { 
-      background: linear-gradient(135deg, #388bfd 0%, #1f6feb 100%);
-      box-shadow: 0 6px 20px rgba(88,166,255,0.4);
-      transform: translateY(-2px);
-    }
-    button:active { transform: translateY(0); }
-    button:disabled { 
-      background: #30363d;
-      color: #6e7681;
-      cursor: not-allowed; 
-      box-shadow: none;
-    }
-    .link { 
-      text-align: center; 
-      margin-top: 24px; 
-      font-size: 0.85rem; 
-      color: #8b949e;
-    }
-    .link a { 
-      color: #58a6ff; 
-      cursor: pointer; 
-      text-decoration: none; 
-      font-weight: 500;
-      transition: color 0.3s;
-    }
+    input:focus { outline: none; border-color: rgba(88,166,255,0.4); background: rgba(88,166,255,0.05); box-shadow: 0 0 0 3px rgba(88,166,255,0.1); }
+    .search-results { position: absolute; top: 100%; left: 0; right: 0; background: rgba(13,17,23,0.98); border: 1px solid rgba(88,166,255,0.2); border-top: none; border-radius: 0 0 6px 6px; max-height: 200px; overflow-y: auto; display: none; z-index: 100; }
+    .search-results.active { display: block; }
+    .search-item { padding: 10px 14px; cursor: pointer; border-bottom: 1px solid rgba(88,166,255,0.1); color: #c9d1d9; transition: background 0.2s; }
+    .search-item:hover { background: rgba(88,166,255,0.1); }
+    .selected-location { padding: 10px 14px; background: rgba(88,166,255,0.05); border: 1px solid rgba(88,166,255,0.2); border-radius: 6px; margin-bottom: 20px; font-size: 0.85rem; display: none; }
+    .selected-location.active { display: block; }
+    button { width: 100%; padding: 12px 16px; background: linear-gradient(135deg, #1f6feb 0%, #388bfd 100%); color: #ffffff; border: 1px solid rgba(88,166,255,0.3); border-radius: 6px; font-weight: 600; cursor: pointer; text-transform: uppercase; font-size: 0.9rem; letter-spacing: 1px; transition: all 0.3s; box-shadow: 0 4px 12px rgba(31,111,235,0.3); }
+    button:hover { background: linear-gradient(135deg, #388bfd 0%, #1f6feb 100%); box-shadow: 0 6px 20px rgba(88,166,255,0.4); transform: translateY(-2px); }
+    button:disabled { background: #30363d; color: #6e7681; cursor: not-allowed; box-shadow: none; }
+    .error { background: rgba(188,47,60,0.15); border: 1px solid rgba(188,47,60,0.4); color: #f85149; padding: 12px 14px; border-radius: 6px; margin-bottom: 20px; font-size: 0.85rem; display: none; }
+    .error.active { display: block; }
+    .link { text-align: center; margin-top: 24px; font-size: 0.85rem; color: #8b949e; }
+    .link a { color: #58a6ff; cursor: pointer; text-decoration: none; font-weight: 500; }
     .link a:hover { color: #79c0ff; }
+    .form-group { position: relative; }
   </style>
 </head>
 <body>
@@ -98,16 +43,186 @@
 <div class="glow glow1"></div>
 <div class="glow glow2"></div>
 <div class="container">
-  <div class="box">
-    <h1>FREIGHT EMPIRE</h1>
-    <p>Persistent Trucking MMO</p>
-    <label>Email Address</label>
-    <input type="email" id="email" placeholder="your@email.com">
-    <label>Password</label>
-    <input type="password" id="password" placeholder="••••••••">
-    <button onclick="alert('Login coming soon')">LOGIN</button>
-    <div class="link">New player? <a onclick="alert('Create account coming soon')">Register here</a></div>
+  <div class="screen active" id="loginScreen">
+    <div class="box">
+      <h1>FREIGHT EMPIRE</h1>
+      <p>Persistent Trucking MMO</p>
+      <div class="error" id="loginError"></div>
+      <label>Email</label>
+      <input type="email" id="loginEmail" placeholder="your@email.com">
+      <label>Password</label>
+      <input type="password" id="loginPassword" placeholder="password">
+      <button onclick="handleLogin()">LOGIN</button>
+      <div class="link">New player? <a onclick="switchScreen(event, 'signupScreen')">Create account</a></div>
+    </div>
+  </div>
+
+  <div class="screen" id="signupScreen">
+    <div class="box">
+      <h1>CREATE ACCOUNT</h1>
+      <p>Freight Empire</p>
+      <div class="error" id="signupError"></div>
+      <label>Email</label>
+      <input type="email" id="signupEmail" placeholder="your@email.com">
+      <label>Password</label>
+      <input type="password" id="signupPassword" placeholder="password">
+      <label>Confirm Password</label>
+      <input type="password" id="signupConfirm" placeholder="password">
+      <button onclick="handleSignup()">CREATE ACCOUNT</button>
+      <div class="link">Already have one? <a onclick="switchScreen(event, 'loginScreen')">Login</a></div>
+    </div>
+  </div>
+
+  <div class="screen" id="companyScreen">
+    <div class="box">
+      <h1>INITIALIZE</h1>
+      <p>Company Protocol</p>
+      <div class="error" id="companyError"></div>
+      <label>Company Name</label>
+      <input type="text" id="companyName" placeholder="e.g., Acme Trucking LLC">
+      <label>Headquarters Location</label>
+      <div class="form-group">
+        <input type="search" id="hqSearch" placeholder="Search city or town...">
+        <div class="search-results" id="searchResults"></div>
+      </div>
+      <div class="selected-location" id="selectedLocation"><strong>Location:</strong> <span id="locationName"></span></div>
+      <button id="createBtn" onclick="handleCreateCompany()" disabled>INITIALIZE COMPANY</button>
+      <div class="link"><a onclick="handleLogout(event)">Logout</a></div>
+    </div>
   </div>
 </div>
+
+<script>
+  const API = "http://143.198.176.234:5000";
+  let token = localStorage.getItem("authToken");
+  let selectedLocation = null;
+  let searchTimeout;
+
+  if (token) switchScreen(null, "companyScreen");
+
+  function switchScreen(e, id) {
+    if (e) e.preventDefault();
+    document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+    document.getElementById(id).classList.add("active");
+  }
+
+  function showError(screenId, msg) {
+    const el = document.getElementById(screenId + "Error");
+    el.textContent = msg;
+    el.classList.add("active");
+    setTimeout(() => el.classList.remove("active"), 5000);
+  }
+
+  async function handleLogin() {
+    const email = document.getElementById("loginEmail").value;
+    const password = document.getElementById("loginPassword").value;
+    if (!email || !password) { showError("login", "Email and password required"); return; }
+    try {
+      const res = await fetch(API + "/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password })
+      });
+      const data = await res.json();
+      if (!res.ok) { showError("login", data.error || "Login failed"); return; }
+      token = data.token;
+      localStorage.setItem("authToken", token);
+      switchScreen(null, "companyScreen");
+    } catch (e) {
+      showError("login", "Network error");
+    }
+  }
+
+  async function handleSignup() {
+    const email = document.getElementById("signupEmail").value;
+    const password = document.getElementById("signupPassword").value;
+    const confirm = document.getElementById("signupConfirm").value;
+    if (!email || !password || !confirm) { showError("signup", "All fields required"); return; }
+    if (password !== confirm) { showError("signup", "Passwords do not match"); return; }
+    if (password.length < 8) { showError("signup", "Password must be 8+ characters"); return; }
+    try {
+      const res = await fetch(API + "/api/auth/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password })
+      });
+      const data = await res.json();
+      if (!res.ok) { showError("signup", data.error || "Signup failed"); return; }
+      token = data.token;
+      localStorage.setItem("authToken", token);
+      switchScreen(null, "companyScreen");
+    } catch (e) {
+      showError("signup", "Network error");
+    }
+  }
+
+  async function handleCreateCompany() {
+    const name = document.getElementById("companyName").value;
+    if (!name || !selectedLocation) { showError("company", "Company name and location required"); return; }
+    try {
+      const res = await fetch(API + "/api/auth/create-company", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer " + token
+        },
+        body: JSON.stringify({
+          name: name,
+          hqCity: selectedLocation.name,
+          hqLatitude: selectedLocation.latitude,
+          hqLongitude: selectedLocation.longitude
+        })
+      });
+      const data = await res.json();
+      if (!res.ok) { showError("company", data.error || "Failed"); return; }
+      window.location.href = "/game";
+    } catch (e) {
+      showError("company", "Network error");
+    }
+  }
+
+  function handleLogout(e) {
+    e.preventDefault();
+    token = null;
+    localStorage.removeItem("authToken");
+    selectedLocation = null;
+    document.getElementById("companyName").value = "";
+    document.getElementById("hqSearch").value = "";
+    document.getElementById("selectedLocation").classList.remove("active");
+    switchScreen(null, "loginScreen");
+  }
+
+  document.getElementById("hqSearch").addEventListener("input", async function(e) {
+    const q = e.target.value.trim();
+    const results = document.getElementById("searchResults");
+    if (q.length < 2) { results.classList.remove("active"); selectedLocation = null; document.getElementById("createBtn").disabled = true; return; }
+    clearTimeout(searchTimeout);
+    results.innerHTML = "<div class=\"search-item\">Searching...</div>";
+    results.classList.add("active");
+    searchTimeout = setTimeout(async function() {
+      try {
+        const res = await fetch(API + "/api/auth/search-cities?q=" + encodeURIComponent(q));
+        const data = await res.json();
+        if (!data.cities || data.cities.length === 0) { results.innerHTML = "<div class=\"search-item\">No results</div>"; return; }
+        results.innerHTML = data.cities.map(c => "<div class=\"search-item\" onclick=\"selectLocation(this, '" + c.name + "', " + c.latitude + ", " + c.longitude + ")\">" + c.name + "</div>").join("");
+      } catch (e) { results.innerHTML = "<div class=\"search-item\">Error</div>"; }
+    }, 300);
+  });
+
+  function selectLocation(el, name, lat, lng) {
+    selectedLocation = { name: name, latitude: lat, longitude: lng };
+    document.getElementById("hqSearch").value = name;
+    document.getElementById("searchResults").classList.remove("active");
+    document.getElementById("locationName").textContent = name;
+    document.getElementById("selectedLocation").classList.add("active");
+    document.getElementById("createBtn").disabled = false;
+  }
+
+  document.addEventListener("click", function(e) {
+    if (!e.target.closest(".form-group")) {
+      document.getElementById("searchResults").classList.remove("active");
+    }
+  });
+</script>
 </body>
 </html>
