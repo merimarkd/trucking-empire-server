@@ -9,6 +9,9 @@ const path = require('path');
 const { initDatabase, pool } = require('./src/db/connection');
 const authRoutes = require('./src/routes/auth');
 const gameRoutes = require('./src/routes/game');
+const statsRoutes = require('./src/routes/stats');
+const bankingRoutes = require('./src/routes/banking');
+const { initializeScheduler } = require('./src/jobs/scheduler');
 
 const app = express();
 const httpServer = createServer(app);
@@ -42,6 +45,8 @@ app.get('/db-health', async (req, res) => {
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/game', gameRoutes);
+app.use('/api/stats', statsRoutes);
+app.use('/api/banking', bankingRoutes);
 
 // 404 handler
 app.use((req, res) => {
@@ -77,6 +82,36 @@ const PORT = process.env.PORT || 5000;
     await initDatabase();
     console.log('✓ Database initialized');
 
+// Tick engine - updates company statistics every 1 second
+const startTickEngine = async () => {
+  setInterval(async () => {
+    try {
+      const companiesResult = await pool.query('SELECT id FROM companies');
+      const companies = companiesResult.rows;
+
+      for (const company of companies) {
+        const companyId = company.id;
+
+        await pool.query(`
+          UPDATE company_statistics
+          SET 
+            seconds_in_operation = EXTRACT(EPOCH FROM (NOW() - company_created_at))::INT,
+            days_in_operation = EXTRACT(DAY FROM (NOW() - company_created_at))::INT,
+            hours_in_operation = EXTRACT(EPOCH FROM (NOW() - company_created_at))::INT / 3600,
+            minutes_in_operation = EXTRACT(EPOCH FROM (NOW() - company_created_at))::INT / 60,
+            updated_at = NOW()
+          WHERE company_id = $1
+        `, [companyId]);
+      }
+    } catch (error) {
+      console.error('Tick engine error:', error);
+    }
+  }, 1000);
+};
+
+startTickEngine();
+console.log('✓ Tick engine started');
+
     httpServer.listen(PORT, process.env.HOST || 'localhost', () => {
       console.log(`✓ Server running on http://${process.env.HOST || 'localhost'}:${PORT}`);
       console.log(`✓ Socket.io listening on port ${PORT}`);
@@ -86,5 +121,8 @@ const PORT = process.env.PORT || 5000;
     process.exit(1);
   }
 })();
+
+// Initialize background tick system
+initializeScheduler();
 
 module.exports = { app, io, httpServer };

@@ -16,51 +16,51 @@ function generateMCNumber() {
 
 // Create company + player on first login
 router.post('/create-company', async (req, res) => {
-  const { username, email, companyName } = req.body;
-
-  if (!username || !email || !companyName) {
-    return res.status(400).json({ error: 'Missing required fields' });
-  }
-
   try {
-    const playerId = uuidv4();
-    const companyId = uuidv4();
-    const dotNumber = generateDOTNumber();
-    const mcNumber = generateMCNumber();
+    const { name, dotNumber, mcNumber, ownerId } = req.body;
 
-    // Insert company
+    if (!name || !ownerId) {
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
+
+    const companiesResult = await pool.query(
+      'SELECT COUNT(*) as count FROM companies WHERE owner_id = $1',
+      [ownerId]
+    );
+    const companyCount = parseInt(companiesResult.rows[0].count);
+
+    if (companyCount >= 3) {
+      return res.status(400).json({ 
+        error: 'Player already owns 3 companies. Maximum limit reached.' 
+      });
+    }
+
+    const companyResult = await pool.query(
+      'INSERT INTO companies (name, dot_number, mc_number, owner_id, cash) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+      [name, dotNumber || null, mcNumber || null, ownerId, 500000]
+    );
+    const company = companyResult.rows[0];
+
     await pool.query(
-      `INSERT INTO companies (id, name, dot_number, mc_number, owner_id, cash)
-       VALUES ($1, $2, $3, $4, $5, 500000)`,
-      [companyId, companyName, dotNumber, mcNumber, playerId]
+      'INSERT INTO company_statistics (company_id, company_created_at) VALUES ($1, $2)',
+      [company.id, new Date()]
     );
 
-    // Insert player
     await pool.query(
-      `INSERT INTO players (id, username, email, company_id, personal_credit_score)
-       VALUES ($1, $2, $3, $4, 650)`,
-      [playerId, username, email, companyId]
+      'UPDATE players SET current_company_id = $1 WHERE id = $2',
+      [company.id, ownerId]
     );
 
-    res.json({
-      success: true,
-      playerId,
-      companyId,
-      dotNumber,
-      mcNumber,
-      initialCash: 500000,
-      message: 'Company created successfully'
-    });
-  } catch (err) {
-    console.error('Company creation error:', err);
-    res.status(500).json({ error: err.message });
+    res.json(company);
+  } catch (error) {
+    console.error('Error creating company:', error);
+    res.status(500).json({ error: 'Failed to create company' });
   }
 });
 
 // Load existing company
 router.post('/load-company', async (req, res) => {
   const { playerId } = req.body;
-
   if (!playerId) {
     return res.status(400).json({ error: 'playerId required' });
   }
@@ -145,5 +145,36 @@ router.get('/player/:playerId', async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+router.post('/switch-company', async (req, res) => {
+  try {
+    const { playerId, companyId } = req.body;
 
+    if (!playerId || !companyId) {
+      return res.status(400).json({ error: 'Missing playerId or companyId' });
+    }
+
+    const ownerCheck = await pool.query(
+      'SELECT owner_id FROM companies WHERE id = $1',
+      [companyId]
+    );
+
+    if (!ownerCheck.rows[0] || ownerCheck.rows[0].owner_id !== playerId) {
+      return res.status(403).json({ error: 'You do not own this company' });
+    }
+
+    const result = await pool.query(
+      'UPDATE players SET current_company_id = $1 WHERE id = $2 RETURNING *',
+      [companyId, playerId]
+    );
+
+    res.json({ 
+      success: true, 
+      message: `Switched to company ${companyId}`,
+      player: result.rows[0]
+    });
+  } catch (error) {
+    console.error('Error switching company:', error);
+    res.status(500).json({ error: 'Failed to switch company' });
+  }
+});
 module.exports = router;
