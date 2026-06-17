@@ -216,19 +216,20 @@
   }
 
   function renderCompanies(companies) {
-    const html = companies.map(c => `
-      <tr>
-        <td>${c.name}</td>
-        <td>${c.owner_name} (${c.owner_id.substring(0, 8)})</td>
-        <td>${c.truck_count}</td>
-        <td>${c.driver_count}</td>
-        <td>${c.active_loans}</td>
-        <td>$${parseFloat(c.cash).toLocaleString()}</td>
-        <td>${new Date(c.created_at).toLocaleDateString()}</td>
-      </tr>
-    `).join('');
-    document.getElementById('companiesTable').innerHTML = html || '<tr><td colspan="7">No companies found</td></tr>';
-  }
+  const html = companies.map(c => `
+    <tr>
+      <td>${c.name}</td>
+      <td>${c.owner_name} (${c.owner_id.substring(0, 8)})</td>
+      <td>${c.truck_count}</td>
+      <td>${c.driver_count}</td>
+      <td>${c.active_loans}</td>
+      <td>$${parseFloat(c.cash).toLocaleString()}</td>
+      <td>${new Date(c.created_at).toLocaleDateString()}</td>
+      <td><button onclick="deleteCompany('${c.id}')" style="padding: 5px 10px; background: rgba(255, 0, 0, 0.1); color: #f85149; border: 1px solid rgba(255, 0, 0, 0.3); font-size: 0.8rem;">Delete</button></td>
+    </tr>
+  `).join('');
+  document.getElementById('companiesTable').innerHTML = html || '<tr><td colspan="8">No companies found</td></tr>';
+}
 
   function renderPlayers(players) {
     const html = players.map(p => `
@@ -238,10 +239,78 @@
         <td>${p.personal_credit_score}</td>
         <td>${p.company_name ? p.company_name + ' (' + p.current_company_id.substring(0, 8) + ')' : 'None'}</td>
         <td>${new Date(p.created_at).toLocaleDateString()}</td>
+        <td><button onclick="deletePlayer('${p.id}', '${p.username}')" style="padding: 5px 10px; background: rgba(255, 0, 0, 0.1); color: #f85149; border: 1px solid rgba(255, 0, 0, 0.3); font-size: 0.8rem;">Delete</button></td>
       </tr>
     `).join('');
     document.getElementById('playersTable').innerHTML = html || '<tr><td colspan="5">No players found</td></tr>';
   }
+
+   function renderDeletedPlayers(players) {
+  const html = players.map(p => `
+    <tr>
+      <td>${p.username}</td>
+      <td>${p.email}</td>
+      <td>${p.deletion_reason}</td>
+      <td>${new Date(p.deleted_at).toLocaleDateString()}</td>
+      <td>${new Date(p.auto_purge_at).toLocaleDateString()}</td>
+      <td><button onclick="viewDeletedPlayer('${p.id}')" style="padding: 5px 10px; font-size: 0.8rem;">View</button></td>
+    </tr>
+  `).join('');
+  document.getElementById('deletedTable').innerHTML = html || '<tr><td colspan="6">No deleted players</td></tr>';
+}
+
+function viewDeletedPlayer(id) {
+  alert('Deleted player details:\nID: ' + id + '\n\n(Profile details coming soon)');
+}
+
+async function deleteCompany(companyId) {
+  if (!confirm('Delete this company and put it up for auction at 50% value?')) {
+    return;
+  }
+  
+  try {
+    const res = await fetch(API + '/api/game/admin/delete-company', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ companyId })
+    });
+    
+    if (res.ok) {
+      alert('Company deleted!');
+      loadCompanies();
+    } else {
+      alert('Error deleting company');
+    }
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+async function deletePlayer(playerId, username) {
+  const reason = prompt('Delete player ' + username + '?\nReason (inactivity/violation/other):');
+  if (!reason) return;
+  
+  const notes = prompt('Admin notes:');
+  
+  try {
+    const res = await fetch(API + '/api/game/admin/delete-player', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ playerId, reason, notes })
+    });
+    
+    if (res.ok) {
+      alert('Player deleted! Companies auctioned, email banned.');
+      loadPlayers();
+      loadDeletedPlayers();
+    } else {
+      alert('Error deleting player');
+    }
+  } catch (error) {
+    console.error(error);
+  }
+}
+
 </script>
 </body>
 </html>
