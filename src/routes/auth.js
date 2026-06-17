@@ -110,9 +110,10 @@ router.post('/create-company', async (req, res) => {
       return res.status(400).json({ error: 'Player already owns 3 companies. Maximum limit reached.' });
     }
     
-    // Generate unique DOT and MC numbers
-const dotNumber = 'DOT' + Math.random().toString(36).substring(2, 10).toUpperCase();
-const mcNumber = 'MC' + Math.random().toString(36).substring(2, 10).toUpperCase();
+    
+// Generate realistic USDOT (8 digits) and MC (7 digits) numbers
+const dotNumber = String(Math.floor(Math.random() * 90000000) + 10000000); // 8-digit number
+const mcNumber = String(Math.floor(Math.random() * 9000000) + 1000000); // 7-digit number
 
 const companyResult = await pool.query(
   'INSERT INTO companies (name, dot_number, mc_number, owner_id, cash) VALUES ($1, $2, $3, $4, $5) RETURNING *',
