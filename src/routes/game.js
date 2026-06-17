@@ -358,4 +358,95 @@ router.post('/admin/reset-all', async (req, res) => {
   }
 });
 
+// Admin: Delete a company and put it up for auction
+router.post('/admin/delete-company', async (req, res) => {
+  try {
+    const { companyId, reason } = req.body;
+    
+    // Get company details
+    const companyRes = await pool.query('SELECT * FROM companies WHERE id = $1', [companyId]);
+    if (companyRes.rows.length === 0) {
+      return res.status(404).json({ error: 'Company not found' });
+    }
+    
+    const company = companyRes.rows[0];
+    
+    // Create auction at 50% value
+    const auctionPrice = parseFloat(company.cash) * 0.5;
+    await pool.query(`
+      INSERT INTO company_auctions (company_id, company_name, original_owner_id, starting_price, current_price)
+      VALUES ($1, $2, $3, $4, $5)
+    `, [companyId, company.name, company.owner_id, auctionPrice, auctionPrice]);
+    
+    // Delete company (will cascade delete related data)
+    await pool.query('DELETE FROM companies WHERE id = $1', [companyId]);
+    
+    res.json({ success: true, message: 'Company deleted and auctioned' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Admin: Delete a player permanently
+router.post('/admin/delete-player', async (req, res) => {
+  try {
+    const { playerId, reason, notes } = req.body;
+    
+    // Get player details
+    const playerRes = await pool.query(
+      'SELECT id, username, email, personal_credit_score FROM players WHERE id = $1',
+      [playerId]
+    );
+    if (playerRes.rows.length === 0) {
+      return res.status(404).json({ error: 'Player not found' });
+    }
+    
+    const player = playerRes.rows[0];
+    
+    // Move player's companies to auction (50% value)
+    const companiesRes = await pool.query('SELECT * FROM companies WHERE owner_id = $1', [playerId]);
+    for (const company of companiesRes.rows) {
+      const auctionPrice = parseFloat(company.cash) * 0.5;
+      await pool.query(`
+        INSERT INTO company_auctions (company_id, company_name, original_owner_id, starting_price, current_price)
+        VALUES ($1, $2, $3, $4, $5)
+      `, [company.id, company.name, playerId, auctionPrice, auctionPrice]);
+    }
+    
+    // Archive to deleted players history
+    const purgeDate = new Date(Date.now() + 6 * 30 * 24 * 60 * 60 * 1000); // 6 months
+    await pool.query(`
+      INSERT INTO deleted_players_history (username, email, personal_credit_score, deletion_reason, deletion_notes, auto_purge_at)
+      VALUES ($1, $2, $3, $4, $5, $6)
+    `, [player.username, player.email, player.personal_credit_score, reason, notes, purgeDate]);
+    
+    // Add to banned list to prevent re-registration
+    await pool.query(`
+      INSERT INTO banned_players (email, reason)
+      VALUES ($1, $2)
+    `, [player.email, notes]);
+    
+    // Delete player
+    await pool.query('DELETE FROM players WHERE id = $1', [playerId]);
+    
+    res.json({ success: true, message: 'Player deleted, companies auctioned, email banned' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Admin: Get deleted players history
+router.get('/admin/deleted-players', async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT * FROM deleted_players_history
+      WHERE auto_purge_at > NOW()
+      ORDER BY deleted_at DESC
+    `);
+    res.json(result.rows);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 module.exports = router;
