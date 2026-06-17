@@ -343,14 +343,14 @@ router.delete('/company/:companyId', async (req, res) => {
 // Admin: Reset all data (DANGEROUS - development only)
 router.post('/admin/reset-all', async (req, res) => {
   try {
-    // Delete in correct order
+    // Delete in correct order to respect foreign keys
     await pool.query('DELETE FROM company_auctions');
     await pool.query('DELETE FROM loans');
     await pool.query('DELETE FROM company_statistics');
     await pool.query('DELETE FROM trucks');
     await pool.query('DELETE FROM drivers');
+    await pool.query('DELETE FROM players');  // Delete players BEFORE companies
     await pool.query('DELETE FROM companies');
-    await pool.query('DELETE FROM players');
     
     res.json({ success: true, message: 'All data deleted' });
   } catch (error) {
