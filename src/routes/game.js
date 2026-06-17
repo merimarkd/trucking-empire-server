@@ -433,6 +433,20 @@ router.post('/admin/delete-player', async (req, res) => {
   }
 });
 
+// Admin: Get all deleted players
+router.get('/admin/deleted-players', async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT * FROM deleted_players_history
+      WHERE auto_purge_at > NOW()
+      ORDER BY deleted_at DESC
+    `);
+    res.json(result.rows);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Admin: Get deleted player details with orphaned companies
 router.get('/admin/deleted-players/:playerId', async (req, res) => {
   try {
