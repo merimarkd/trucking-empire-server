@@ -66,6 +66,7 @@ router.post('/login', async (req, res) => {
     }
     
     const token = jwt.sign({ playerId: user.id }, JWT_SECRET);
+    await pool.query('UPDATE players SET last_login = CURRENT_TIMESTAMP WHERE email = $1', [email]);
     res.json({ token });
   } catch (error) {
     console.error('Login error:', error);
