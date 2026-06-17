@@ -239,20 +239,21 @@ router.get('/admin/companies', async (req, res) => {
 // Admin: Get overview stats
 router.get('/admin/stats', async (req, res) => {
   try {
-    const players = await pool.query('SELECT COUNT(*) as count FROM players');
-    const companies = await pool.query('SELECT COUNT(*) as count FROM companies');
-    const totalCash = await pool.query('SELECT COALESCE(SUM(cash), 0) as total FROM companies');
-    const avgCreditScore = await pool.query('SELECT COALESCE(AVG(personal_credit_score), 0) as avg FROM players');
-    const activeLoans = await pool.query('SELECT COUNT(*) as count FROM loans WHERE status != "paid_off"');
+    const playerCount = await pool.query('SELECT COUNT(*) as count FROM players');
+    const companyCount = await pool.query('SELECT COUNT(*) as count FROM companies');
+    const cashSum = await pool.query('SELECT SUM(cash) as total FROM companies');
+    const creditAvg = await pool.query('SELECT AVG(personal_credit_score) as avg FROM players');
+    const loanCount = await pool.query("SELECT COUNT(*) as count FROM loans WHERE status = 'active'");
     
     res.json({
-      totalPlayers: parseInt(players.rows[0].count),
-      totalCompanies: parseInt(companies.rows[0].count),
-      totalCash: parseFloat(totalCash.rows[0].total),
-      avgCreditScore: parseFloat(avgCreditScore.rows[0].avg).toFixed(0),
-      activeLoans: parseInt(activeLoans.rows[0].count)
+      totalPlayers: playerCount.rows[0].count || 0,
+      totalCompanies: companyCount.rows[0].count || 0,
+      totalCash: cashSum.rows[0].total || 0,
+      avgCreditScore: creditAvg.rows[0].avg || 0,
+      activeLoans: loanCount.rows[0].count || 0
     });
   } catch (error) {
+    console.error('Stats error:', error);
     res.status(500).json({ error: error.message });
   }
 });
