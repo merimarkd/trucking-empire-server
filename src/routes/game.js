@@ -258,8 +258,6 @@ router.get('/admin/stats', async (req, res) => {
   }
 });
 
-module.exports = router;
-
 // Admin: Get all companies with metrics
 router.get('/admin/companies', async (req, res) => {
   try {
@@ -299,3 +297,28 @@ router.get('/admin/stats', async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+
+// Get company dashboard data
+router.get('/company/:companyId', async (req, res) => {
+  try {
+    const { companyId } = req.params;
+    
+    const company = await pool.query('SELECT * FROM companies WHERE id = $1', [companyId]);
+    const trucks = await pool.query('SELECT COUNT(*) as count FROM trucks WHERE company_id = $1', [companyId]);
+    const drivers = await pool.query('SELECT COUNT(*) as count FROM drivers WHERE company_id = $1', [companyId]);
+    const loans = await pool.query('SELECT * FROM loans WHERE company_id = $1 AND status = $2 ORDER BY created_at DESC LIMIT 5', [companyId, 'active']);
+    const owner = await pool.query('SELECT username, personal_credit_score FROM players WHERE id = $1', [company.rows[0].owner_id]);
+    
+    res.json({
+      company: company.rows[0],
+      truckCount: trucks.rows[0].count,
+      driverCount: drivers.rows[0].count,
+      owner: owner.rows[0],
+      loans: loans.rows
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+module.exports = router;
