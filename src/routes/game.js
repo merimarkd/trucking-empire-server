@@ -444,4 +444,31 @@ router.get('/admin/deleted-players', async (req, res) => {
   }
 });
 
+// Admin: Get deleted player details
+router.get('/admin/deleted-players/:playerId', async (req, res) => {
+  try {
+    const { playerId } = req.params;
+    
+    const playerRes = await pool.query(
+      'SELECT * FROM deleted_players_history WHERE id = $1',
+      [playerId]
+    );
+    
+    if (playerRes.rows.length === 0) {
+      return res.status(404).json({ error: 'Deleted player not found' });
+    }
+    
+    const player = playerRes.rows[0];
+    
+    // Get count of orphaned companies
+    const companiesRes = await pool.query(
+      'SELECT COUNT(*) as count FROM companies WHERE owner_id IS NULL'
+    );
+    
+    res.json({ player, orphanedCompaniesCount: companiesRes.rows[0].count });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 module.exports = router;
