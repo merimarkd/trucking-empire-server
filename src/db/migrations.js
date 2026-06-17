@@ -115,7 +115,13 @@ await pool.query(`
   )
 `);
 console.log('✓ Migration: Created compliance_strikes table');
-    console.log('✓ Migration: Added auto_pay_enabled to loans');
+
+// Allow owner_id to be NULL for orphaned companies
+await pool.query(`
+  ALTER TABLE companies
+  ALTER COLUMN owner_id DROP NOT NULL
+`);
+console.log('✓ Migration: Made companies.owner_id nullable');
 
   } catch (error) {
     if (error.message.includes('already exists')) {
