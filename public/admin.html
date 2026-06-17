@@ -218,7 +218,7 @@
   function renderCompanies(companies) {
   const html = companies.map(c => `
     <tr>
-      <td>${c.name}</td>
+      <td><a href="#" onclick="viewCompany('${c.id}'); return false;" style="color: #58a6ff; text-decoration: none; cursor: pointer;">${c.name}</a></td>
       <td>${c.owner_name} (${c.owner_id.substring(0, 8)})</td>
       <td>${c.truck_count}</td>
       <td>${c.driver_count}</td>
@@ -345,7 +345,10 @@ async function loadDeletedPlayerDetails(playerId) {
           ${player.deletion_notes || '<em style="opacity: 0.6;">None</em>'}
         </div>
         <div style="margin-bottom: 15px; padding: 10px; background: rgba(88, 166, 255, 0.05); border-radius: 2px;">
-          <strong>System:</strong> ${data.orphanedCompaniesCount} orphaned companies exist in system
+          <strong>Orphaned Companies:</strong><br>
+          ${data.orphanedCompanies && data.orphanedCompanies.length > 0 
+            ? data.orphanedCompanies.map(c => `<div style="margin-top: 8px;"><a href="#" onclick="viewCompany('${c.id}'); return false;" style="color: #58a6ff; text-decoration: none; cursor: pointer;">${c.name}</a> <span style="opacity: 0.6;">(${c.id.substring(0, 8)})</span></div>`).join('')
+            : '<em style="opacity: 0.6;">None</em>'}
         </div>
       `;
       document.getElementById('deletedPlayerContent').innerHTML = html;
@@ -530,6 +533,108 @@ async function confirmDeletePlayer(playerId) {
   } catch (error) {
     console.error(error);
     alert('Error deleting player: ' + error.message);
+  }
+}
+
+function viewCompany(companyId) {
+  openCompanyModal(companyId);
+}
+
+function openCompanyModal(companyId) {
+  const modal = document.createElement('div');
+  modal.id = 'viewCompanyModal';
+  modal.style.cssText = `
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+  `;
+  
+  modal.innerHTML = `
+    <div style="
+      background: #0d1117;
+      border: 2px solid #58a6ff;
+      border-radius: 4px;
+      padding: 30px;
+      width: 550px;
+      max-height: 80vh;
+      overflow-y: auto;
+      box-shadow: 0 0 20px rgba(88, 166, 255, 0.3);
+    ">
+      <h2 style="color: #58a6ff; margin: 0 0 20px 0; font-size: 1.4rem;">Company Details</h2>
+      <div id="companyContent" style="color: #c9d1d9; line-height: 1.8;">
+        <div class="loading">Loading...</div>
+      </div>
+      <button onclick="closeCompanyModal()" style="
+        margin-top: 20px;
+        width: 100%;
+        padding: 10px;
+        background: rgba(88, 166, 255, 0.1);
+        color: #58a6ff;
+        border: 1px solid rgba(88, 166, 255, 0.3);
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: bold;
+      ">Close</button>
+    </div>
+  `;
+  
+  document.body.appendChild(modal);
+  modal.onclick = (e) => {
+    if (e.target === modal) closeCompanyModal();
+  };
+  
+  loadCompanyDetails(companyId);
+}
+
+function closeCompanyModal() {
+  const modal = document.getElementById('viewCompanyModal');
+  if (modal) modal.remove();
+}
+
+async function loadCompanyDetails(companyId) {
+  try {
+    const res = await fetch(API + '/api/game/admin/company/' + companyId);
+    const data = await res.json();
+    
+    if (res.ok) {
+      const c = data.company;
+      const html = `
+        <div style="margin-bottom: 15px; padding: 10px; background: rgba(88, 166, 255, 0.1); border-left: 3px solid #58a6ff; border-radius: 2px;">
+          <strong>Company Name:</strong> ${c.name}<br>
+          <strong>Owner:</strong> ${c.owner_name || 'Orphaned'}<br>
+          <strong>Company ID:</strong> ${c.id}
+        </div>
+        <div style="margin-bottom: 15px;">
+          <strong>DOT Number:</strong> ${c.dot_number}<br>
+          <strong>MC Number:</strong> ${c.mc_number}<br>
+          <strong>Cash:</strong> $${parseFloat(c.cash).toLocaleString()}<br>
+          <strong>Created:</strong> ${new Date(c.created_at).toLocaleString()}
+        </div>
+        <div style="margin-bottom: 15px; padding: 10px; background: rgba(88, 166, 255, 0.05); border-radius: 2px;">
+          <strong>Fleet Metrics:</strong><br>
+          Trucks: ${c.truck_count}<br>
+          Drivers: ${c.driver_count}<br>
+          Active Loans: ${c.active_loans}
+        </div>
+        <div style="margin-bottom: 15px;">
+          <strong>ISS Score:</strong> ${c.iss_score}<br>
+          <strong>ISS Tier:</strong> ${c.iss_tier}
+        </div>
+      `;
+      document.getElementById('companyContent').innerHTML = html;
+    } else {
+      document.getElementById('companyContent').innerHTML = '<span style="color: #f85149;">Error loading company details: ' + data.error + '</span>';
+    }
+  } catch (error) {
+    console.error(error);
+    document.getElementById('companyContent').innerHTML = '<span style="color: #f85149;">Error: ' + error.message + '</span>';
   }
 }
 
