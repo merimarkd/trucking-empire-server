@@ -526,6 +526,8 @@ async function confirmDeletePlayer(playerId) {
       setTimeout(() => msg.remove(), 3000);
       loadPlayers();
       loadDeletedPlayers();
+      loadCompanies();
+      loadStats();
     } else {
       const error = await res.json();
       alert('Error: ' + error.error);
@@ -635,6 +637,32 @@ async function loadCompanyDetails(companyId) {
   } catch (error) {
     console.error(error);
     document.getElementById('companyContent').innerHTML = '<span style="color: #f85149;">Error: ' + error.message + '</span>';
+  }
+}
+
+async function confirmDeleteCompany(companyId, action) {
+  closeCompanyModal();
+  
+  try {
+    const res = await fetch(API + '/api/game/admin/delete-company', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ companyId, action })
+    });
+
+    const data = await res.json();
+    
+    if (res.ok) {
+      showNotification(data.message, 'success');
+      loadCompanies();
+      loadStats();
+      loadPlayers();
+    } else {
+      showNotification('Error: ' + data.error, 'error');
+    }
+  } catch (error) {
+    console.error(error);
+    showNotification('Error: ' + error.message, 'error');
   }
 }
 

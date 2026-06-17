@@ -414,9 +414,9 @@ router.post('/admin/delete-player', async (req, res) => {
     // Step 4: Archive to deleted players history
     const purgeDate = new Date(Date.now() + 6 * 30 * 24 * 60 * 60 * 1000); // 6 months
     await pool.query(`
-      INSERT INTO deleted_players_history (username, email, personal_credit_score, deletion_reason, deletion_notes, auto_purge_at)
-      VALUES ($1, $2, $3, $4, $5, $6)
-    `, [player.username, player.email, player.personal_credit_score, reason, notes, purgeDate]);
+      INSERT INTO deleted_players_history (id, username, email, personal_credit_score, deletion_reason, deletion_notes, auto_purge_at)
+VALUES ($1, $2, $3, $4, $5, $6, $7)
+    `, [playerId, player.username, player.email, player.personal_credit_score, reason, notes, purgeDate]);
     
     // Step 5: Add to banned list
     await pool.query(`
