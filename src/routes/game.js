@@ -405,23 +405,26 @@ router.post('/admin/delete-player', async (req, res) => {
     // Step 1: FIRST - Clear player's current_company_id to remove FK constraint
     await pool.query('UPDATE players SET current_company_id = NULL WHERE id = $1', [playerId]);
     
-    // Step 2: Now orphan player's companies (set owner_id to NULL)
+    // Step 2: Track original owner before orphaning
+    await pool.query('UPDATE companies SET previous_owner_id = owner_id WHERE owner_id = $1', [playerId]);
+    
+    // Step 3: Now orphan player's companies (set owner_id to NULL)
     await pool.query('UPDATE companies SET owner_id = NULL WHERE owner_id = $1', [playerId]);
     
-    // Step 3: Archive to deleted players history
+    // Step 4: Archive to deleted players history
     const purgeDate = new Date(Date.now() + 6 * 30 * 24 * 60 * 60 * 1000); // 6 months
     await pool.query(`
       INSERT INTO deleted_players_history (username, email, personal_credit_score, deletion_reason, deletion_notes, auto_purge_at)
       VALUES ($1, $2, $3, $4, $5, $6)
     `, [player.username, player.email, player.personal_credit_score, reason, notes, purgeDate]);
     
-    // Step 4: Add to banned list
+    // Step 5: Add to banned list
     await pool.query(`
       INSERT INTO banned_players (email, reason)
       VALUES ($1, $2)
     `, [player.email, notes]);
     
-    // Step 5: Delete player
+    // Step 6: Delete player
     await pool.query('DELETE FROM players WHERE id = $1', [playerId]);
     
     res.json({ success: true, message: 'Player deleted. Companies orphaned.' });
@@ -430,21 +433,7 @@ router.post('/admin/delete-player', async (req, res) => {
   }
 });
 
-// Admin: Get deleted players history
-router.get('/admin/deleted-players', async (req, res) => {
-  try {
-    const result = await pool.query(`
-      SELECT * FROM deleted_players_history
-      WHERE auto_purge_at > NOW()
-      ORDER BY deleted_at DESC
-    `);
-    res.json(result.rows);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// Admin: Get deleted player details
+// Admin: Get deleted player details with orphaned companies
 router.get('/admin/deleted-players/:playerId', async (req, res) => {
   try {
     const { playerId } = req.params;
@@ -460,12 +449,13 @@ router.get('/admin/deleted-players/:playerId', async (req, res) => {
     
     const player = playerRes.rows[0];
     
-    // Get count of orphaned companies
+    // Get orphaned companies that belonged to this deleted player
     const companiesRes = await pool.query(
-      'SELECT COUNT(*) as count FROM companies WHERE owner_id IS NULL'
+      'SELECT id, name, cash FROM companies WHERE previous_owner_id = $1 ORDER BY created_at DESC',
+      [playerId]
     );
     
-    res.json({ player, orphanedCompaniesCount: companiesRes.rows[0].count });
+    res.json({ player, orphanedCompanies: companiesRes.rows });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

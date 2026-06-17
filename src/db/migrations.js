@@ -121,6 +121,13 @@ await pool.query(`
   ALTER TABLE companies
   ALTER COLUMN owner_id DROP NOT NULL
 `);
+
+// Track previous owner of orphaned companies
+await pool.query(`
+  ALTER TABLE companies
+  ADD COLUMN IF NOT EXISTS previous_owner_id UUID
+`);
+
 console.log('✓ Migration: Made companies.owner_id nullable');
 
   } catch (error) {
