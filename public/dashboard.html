@@ -43,6 +43,7 @@
       <p id="ownerName">-</p>
       <p>Credit Score: <span id="creditScore">-</span></p>
       <div class="button-group" style="margin-top: 10px; justify-content: flex-end;">
+        <button class="secondary" style="background: rgba(255, 0, 0, 0.1); color: #f85149; border-color: rgba(255, 0, 0, 0.3);" onclick="deleteCompany()">Delete Company</button>
         <button class="secondary" onclick="window.location.href='/'">Logout</button>
       </div>
     </div>
@@ -109,6 +110,7 @@
       }
 
       // Get company data
+      currentCompanyId = currentPlayer.current_company_id;
       const companyRes = await fetch(API + '/api/game/company/' + currentPlayer.current_company_id);
       const data = await companyRes.json();
       
@@ -139,6 +141,27 @@
     } catch (error) {
       console.error(error);
       document.body.innerHTML = '<p style="padding: 20px; color: red;">Error loading dashboard</p>';
+    }
+  }
+
+async function deleteCompany() {
+    if (!confirm('Are you sure? This will permanently delete this company and all data.')) {
+      return;
+    }
+    
+    try {
+      const res = await fetch(API + '/api/game/company/' + currentCompanyId, {
+        method: 'DELETE'
+      });
+      
+      if (res.ok) {
+        alert('Company deleted! Redirecting...');
+        window.location.href = '/';
+      } else {
+        alert('Error deleting company');
+      }
+    } catch (error) {
+      console.error(error);
     }
   }
 

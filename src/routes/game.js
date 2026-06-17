@@ -321,4 +321,27 @@ router.get('/company/:companyId', async (req, res) => {
   }
 });
 
+// Delete company
+router.delete('/company/:companyId', async (req, res) => {
+  try {
+    const { companyId } = req.params;
+    
+    // Delete related data first
+    await pool.query('DELETE FROM trucks WHERE company_id = $1', [companyId]);
+    await pool.query('DELETE FROM drivers WHERE company_id = $1', [companyId]);
+    await pool.query('DELETE FROM loans WHERE company_id = $1', [companyId]);
+    await pool.query('DELETE FROM company_statistics WHERE company_id = $1', [companyId]);
+    
+    // Delete the company
+    await pool.query('DELETE FROM companies WHERE id = $1', [companyId]);
+    
+    // Clear player's current company
+    await pool.query('UPDATE players SET current_company_id = NULL WHERE current_company_id = $1', [companyId]);
+    
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 module.exports = router;
