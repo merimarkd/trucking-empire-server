@@ -43,6 +43,20 @@
     .ops-company-name { font-size: 1.2rem; color: #58a6ff; font-weight: bold; }
     .ops-stats { display: flex; gap: 30px; font-size: 0.9rem; color: #8b949e; }
     .ops-tab-content { flex: 1; padding: 20px; overflow-y: auto; }
+    .ops-players-online { font-size: 0.85rem; color: #8b949e; margin-left: 30px; }
+    .ops-news-container { display: flex; flex-direction: column; height: 100%; }
+    .ops-ticker { background: rgba(88, 166, 255, 0.05); border-bottom: 1px solid rgba(88, 166, 255, 0.2); padding: 10px; overflow: hidden; height: 40px; }
+    .ticker-text { color: #58a6ff; font-size: 0.9rem; white-space: nowrap; animation: scroll-left 30s linear infinite; }
+    @keyframes scroll-left { from { transform: translateX(100%); } to { transform: translateX(-100%); } }
+    .ops-news-tabs { display: flex; gap: 10px; padding: 15px; border-bottom: 1px solid rgba(88, 166, 255, 0.2); }
+    .news-tab { background: transparent; border: none; color: #8b949e; cursor: pointer; padding: 5px 15px; border-bottom: 2px solid transparent; transition: all 0.2s ease; font-size: 0.9rem; }
+    .news-tab:hover { color: #58a6ff; }
+    .news-tab.active { color: #58a6ff; border-bottom-color: #58a6ff; }
+    .ops-news-feed { flex: 1; overflow-y: auto; padding: 15px; }
+    .news-item { margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid rgba(88, 166, 255, 0.1); }
+    .news-headline { color: #58a6ff; font-weight: bold; font-size: 0.95rem; margin-bottom: 5px; }
+    .news-meta { color: #8b949e; font-size: 0.8rem; margin-bottom: 8px; }
+    .news-body { color: #c9d1d9; font-size: 0.9rem; line-height: 1.4; }
 </style>
   </style>
 </head>
@@ -213,7 +227,7 @@ function openDepartmentWindow(departmentName, departmentId) {
   
   window.innerHTML = `
     <div class="window-header">
-      <span>COMPANY OPERATIONS CENTER</span>
+      <span>${companyData.name.toUpperCase()}</span>
       <button class="window-close">X</button>
     </div>
     <div class="ops-main">
@@ -245,8 +259,11 @@ function openDepartmentWindow(departmentName, departmentId) {
       <div class="ops-content">
         <div class="ops-header">
           <div class="ops-company-info">
-            <div class="ops-company-name" id="opsCompanyName">${companyData.name}</div>
+            <div class="ops-company-name" id="opsCompanyName">OPERATIONS CENTER</div>
             <div class="ops-stats">
+             <div class="ops-players-online">
+               Players Online: <span id="opsPlayersOnline">0</span>
+              </div>
               <span>Time: <span id="opsTime">00:00</span></span>
               <span>Balance: $<span id="opsBalance">0</span></span>
               <span>Drivers: <span id="opsDrivers">0</span> / <span id="opsActiveDrivers">0</span></span>
@@ -254,7 +271,20 @@ function openDepartmentWindow(departmentName, departmentId) {
           </div>
         </div>
         <div class="ops-tab-content" id="opsTabContent">
-          <p>Select a tab to begin...</p>
+          <div class="ops-news-container">
+  <div class="ops-ticker">
+    <div class="ticker-text" id="tickerText">
+      Loading market data...
+    </div>
+  </div>
+  <div class="ops-news-tabs">
+    <button class="news-tab active" data-tab="global">GLOBAL</button>
+    <button class="news-tab" data-tab="local">LOCAL</button>
+  </div>
+  <div class="ops-news-feed" id="newsFeed">
+    <p>Loading news...</p>
+  </div>
+</div>
         </div>
       </div>
     </div>
@@ -278,6 +308,23 @@ function openDepartmentWindow(departmentName, departmentId) {
   
   // Update time every second
   setInterval(() => updateOpsTime(), 1000);
+
+// Setup news tabs
+window.querySelectorAll('.news-tab').forEach(tab => {
+  tab.addEventListener('click', (e) => {
+    window.querySelectorAll('.news-tab').forEach(t => t.classList.remove('active'));
+    e.target.classList.add('active');
+    loadNewsFeed(e.target.dataset.tab);
+  });
+});
+
+// Load initial data
+loadPlayersOnline();
+updateTicker();
+loadNewsFeed('global');
+
+// Refresh players online every 5 minutes
+setInterval(loadPlayersOnline, 5 * 60 * 1000);
 }
 
 async function loadCompanyStats() {
@@ -306,6 +353,56 @@ function updateOpsTime() {
   const timeEl = document.getElementById('opsTime');
   if (timeEl) {
     timeEl.textContent = formatter.format(now);
+  }
+}
+
+function loadPlayersOnline() {
+  fetch(API + '/api/game/players-online')
+    .then(r => r.json())
+    .then(data => {
+      const el = document.getElementById('opsPlayersOnline');
+      if (el) el.textContent = data.count || 0;
+    })
+    .catch(err => console.error('Error loading players online:', err));
+}
+
+function updateTicker() {
+  const tickers = [
+    'National Diesel Average: $3.45/gal ↑ 2.1%',
+    'Texas Fuel Price: $3.38/gal | California: $4.12/gal',
+    'OPEC Production Report: 2.2M barrels/day',
+    'Freight Market Index: +3.2% this week',
+    'Tire Prices: ↓ 1.8% following market adjustments'
+  ];
+  let index = 0;
+  setInterval(() => {
+    const el = document.getElementById('tickerText');
+    if (el) {
+      el.textContent = tickers[index];
+      index = (index + 1) % tickers.length;
+    }
+  }, 5000);
+}
+
+function loadNewsFeed(tab) {
+  const globalNews = [
+    { headline: '[GLOBAL] National diesel prices surge 3% amid OPEC production cuts', meta: '2 hours ago', body: 'Major fuel price spike across all states expected to impact carrier margins.' },
+    { headline: '[GLOBAL] Record freight volumes reported nationwide', meta: '5 hours ago', body: 'Logistics sector experiences unprecedented demand surge this quarter.' }
+  ];
+  const localNews = [
+    { headline: '[LOCAL] Regional fuel prices up 2.5% this week', meta: '1 hour ago', body: 'State average diesel now at $3.38/gallon.' },
+    { headline: '[LOCAL] Weather alert: Heavy rain expected this weekend', meta: '3 hours ago', body: 'Carriers advised to adjust schedules accordingly.' }
+  ];
+  const news = tab === 'global' ? globalNews : localNews;
+  const feedEl = document.getElementById('newsFeed');
+  if (feedEl) {
+    feedEl.innerHTML = news.map(item => `
+      <div class="news-item">
+        <div class="news-headline">${item.headline}</div>
+        <div class="news-meta">${item.meta}</div>
+        <div class="news-body">${item.body}</div>
+      </div>
+    `).join('');
   }
 }
 

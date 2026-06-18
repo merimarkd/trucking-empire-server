@@ -342,6 +342,18 @@ router.get('/hq/:companyId', async (req, res) => {
   }
 });
 
+// Get players online count
+router.get('/players-online', async (req, res) => {
+  try {
+    const result = await pool.query(
+      'SELECT COUNT(DISTINCT id) as count FROM players WHERE last_login > NOW() - INTERVAL \'30 minutes\''
+    );
+    res.json({ count: parseInt(result.rows[0].count) || 0 });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Get company financial and operations stats
 router.get('/company-stats/:companyId', async (req, res) => {
   try {
