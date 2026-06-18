@@ -96,7 +96,7 @@ router.post('/create-company', async (req, res) => {
     const decoded = require('jsonwebtoken').verify(token, 'freight-empire-secret-key-change-in-production');
     const ownerId = decoded.playerId;
     
-    const { name, hqCity, hqLatitude, hqLongitude } = req.body;
+    const { name, hqCity, hqState, hqLatitude, hqLongitude } = req.body;
     
     if (!name || !ownerId) {
       return res.status(400).json({ error: 'Missing required fields' });
@@ -117,9 +117,9 @@ const dotNumber = String(Math.floor(Math.random() * 90000000) + 10000000); // 8-
 const mcNumber = String(Math.floor(Math.random() * 9000000) + 1000000); // 7-digit number
 
 const companyResult = await pool.query(
-  'INSERT INTO companies (name, dot_number, mc_number, owner_id, cash) VALUES ($1, $2, $3, $4, $5) RETURNING *',
-  [name, dotNumber, mcNumber, ownerId, 500000]
-);
+     'INSERT INTO companies (name, dot_number, mc_number, owner_id, cash, hq_state) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
+     [name, dotNumber, mcNumber, ownerId, 500000, hqState]
+   );
     
     const company = companyResult.rows[0];
     

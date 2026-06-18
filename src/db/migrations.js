@@ -129,6 +129,13 @@ await pool.query(`
 `);
 console.log('✓ Migration: Added previous_owner_id to companies');
 
+// Add HQ state for timezone tracking
+await pool.query(`
+  ALTER TABLE companies
+  ADD COLUMN IF NOT EXISTS hq_state VARCHAR(2)
+`);
+console.log('✓ Migration: Added hq_state to companies');
+
   } catch (error) {
     if (error.message.includes('already exists')) {
       console.log('✓ Tables already exist');
