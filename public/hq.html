@@ -78,7 +78,7 @@
   <div class="hq-header">
   <div style="display: flex; align-items: center; gap: 12px;">
     <button class="hq-dashboard-btn" onclick="openDepartmentWindow()">DASHBOARD</button>
-    <span id="headerUsername" style="color: #58a6ff; font-size: 0.85rem; font-weight: bold;"></span>
+    <span id="headerUsername" style="color: #58a6ff; font-size: 0.9rem; font-weight: bold; letter-spacing: 1px; text-shadow: 0 0 10px rgba(88,166,255,0.6); border-left: 2px solid rgba(88,166,255,0.4); padding-left: 12px; margin-left: 4px;"></span>
   </div>
   <div class="hq-title">FREIGHT EMPIRE</div>
   <div class="hq-stats">
@@ -522,13 +522,12 @@ function handleLogout() {
 }
 
 function loadPlayersOnline() {
-  fetch(API + '/api/game/players-online')
+  fetch(API + '/api/game/players-online?t=' + Date.now())
     .then(r => r.json())
     .then(data => {
-      const el = document.getElementById('opsPlayersOnline');
-      if (el) el.textContent = data.count || 0;
+      document.getElementById('headerPlayersOnline').textContent = 'Players Online: ' + (data.count || 0);
     })
-    .catch(err => console.error('Error loading players online:', err));
+    .catch(err => console.error('Players online error:', err));
 }
 
 // Ping server every 60 seconds to stay online
