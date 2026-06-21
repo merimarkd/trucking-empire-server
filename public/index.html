@@ -159,16 +159,16 @@
 
   <div class="screen" id="companyScreen">
     <div class="box">
-      <h1>INITIALIZE</h1>
-      <p>Company Protocol</p>
+      <h1>ESTABLISH YOUR COMPANY</h1>
+      <p>Company Information</p>
       <div class="error" id="companyError"></div>
-      <label>Company Name</label>
       <label>Username</label>
       <input type="text" id="companyUsername" placeholder="e.g., Supertrucker" maxlength="30">
+      <label>Company Name</label>
       <input type="text" id="companyName" placeholder="e.g., Acme Trucking LLC">
       <label>Headquarters Location</label>
       <div class="form-group">
-        <input type="search" id="hqSearch" placeholder="Search city or town...">
+        <input type="text" id="hqSearch" placeholder="Search city or town..." autocomplete="off">
         <div class="search-results" id="searchResults"></div>
       </div>
       <div class="selected-location" id="selectedLocation"><strong>Location:</strong> <span id="locationName"></span></div>

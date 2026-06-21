@@ -400,20 +400,18 @@ router.get('/search-cities', async (req, res) => {
         const types = feature.place_type || [];
         return types.includes('place');
       })
-      .map(feature => ({
-        name: feature.place_name,
-        latitude: feature.geometry.coordinates[1],
-        longitude: feature.geometry.coordinates[0],
-        id: feature.id
-      }))
-      .slice(0, 10);
-
-    res.json({ cities });
-  } catch (error) {
-    console.error('Error searching cities:', error);
-    res.status(500).json({ error: 'Failed to search cities' });
-  }
-});
+      .map(feature => {
+        const context = feature.context || [];
+        const regionContext = context.find(c => c.id && c.id.startsWith('region'));
+        const stateAbbr = regionContext ? regionContext.short_code?.replace('US-', '') : null;
+        return {
+          name: feature.place_name,
+          latitude: feature.geometry.coordinates[1],
+          longitude: feature.geometry.coordinates[0],
+          id: feature.id,
+          state: stateAbbr
+        };
+      })
 
 // Admin: Get all players
 router.get('/admin/players', async (req, res) => {

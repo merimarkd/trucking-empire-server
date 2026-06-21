@@ -33,7 +33,7 @@
     .department-menu h3 { color: #58a6ff; margin-bottom: 15px; border-bottom: 1px solid rgba(88, 166, 255, 0.3); padding-bottom: 10px; }
     .department-item { padding: 10px; margin: 8px 0; background: rgba(88, 166, 255, 0.1); border: 1px solid rgba(88, 166, 255, 0.2); border-radius: 2px; cursor: pointer; transition: all 0.2s ease; color: #c9d1d9; }
     .department-item:hover { background: rgba(88, 166, 255, 0.2); border-color: #58a6ff; color: #58a6ff; }
-    .game-window { position: fixed; background: rgba(13, 17, 23, 0.95); border: 2px solid rgba(248, 81, 73, 0.3); border-radius: 4px; display: flex; flex-direction: column; left: 50px; top: 50px; z-index: 1000; }
+    .game-window { position: fixed; background: rgba(13, 17, 23, 0.95); border: 2px solid rgba(88, 166, 255, 0.4); border-radius: 4px; display: flex; flex-direction: column; left: 50px; top: 50px; z-index: 1000; }
     .window-header { background: rgba(88, 166, 255, 0.1); border-bottom: 1px solid rgba(88, 166, 255, 0.3); padding: 12px 15px; color: #58a6ff; font-weight: bold; display: flex; justify-content: space-between; align-items: center; cursor: move; user-select: none; }
     .window-close { background: rgba(248, 81, 73, 0.2); border: 1px solid rgba(248, 81, 73, 0.4); color: #f85149; padding: 5px 10px; border-radius: 2px; cursor: pointer; font-size: 0.8rem; transition: all 0.2s ease; }
     .window-close:hover { background: rgba(248, 81, 73, 0.3); border-color: #f85149; }
@@ -80,7 +80,7 @@
   <div class="hq-stats">
     <span id="headerPlayersOnline">Players Online: 0</span>
     <span id="headerTime">00:00</span>
-    <button class="anim-toggle" id="animToggle" onclick="toggleAnimation()" title="Toggle Background Animation">ANIMATION</button>
+    <button class="anim-toggle" id="animToggle" onclick="toggleAnimation()">ANIMATION</button>
   </div>
 </div>
   <div class="hq-content">
@@ -327,13 +327,6 @@ function toggleAnimation() {
   button.classList.toggle('off', !animationEnabled);
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-  const button = document.getElementById('animToggle');
-  if (button) {
-    button.addEventListener('click', toggleAnimation);
-  }
-});
-
 function openDepartmentWindow(departmentName, departmentId) {
   // Don't open if already open
   if (document.getElementById('operations-center')) {
@@ -392,9 +385,6 @@ function openDepartmentWindow(departmentName, departmentId) {
           <div class="ops-company-info">
             <div class="ops-company-name" id="opsCompanyName">OPERATIONS CENTER</div>
             <div class="ops-stats">
-             <div class="ops-players-online">
-               Players Online: <span id="opsPlayersOnline">0</span>
-              </div>
               <span>Time: <span id="opsTime">00:00</span></span>
               <span>Balance: $<span id="opsBalance">0</span></span>
               <span>Drivers: <span id="opsDrivers">0</span> / <span id="opsActiveDrivers">0</span></span>
