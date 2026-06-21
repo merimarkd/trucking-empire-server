@@ -204,11 +204,11 @@ router.post('/create-company', async (req, res) => {
     const decoded = require('jsonwebtoken').verify(token, 'freight-empire-secret-key-change-in-production');
     const ownerId = decoded.playerId;
     
-    const { name, hqCity, hqState, hqLatitude, hqLongitude } = req.body;
+    const { name, username, hqCity, hqState, hqLatitude, hqLongitude } = req.body;
     
-    if (!name || !ownerId) {
-      return res.status(400).json({ error: 'Missing required fields' });
-    }
+    if (!name || !username || !ownerId) {
+  return res.status(400).json({ error: 'Company name and username are required' });
+}
     
     const companiesResult = await pool.query(
       'SELECT COUNT(*) as count FROM companies WHERE owner_id = $1',
@@ -232,9 +232,9 @@ const companyResult = await pool.query(
     const company = companyResult.rows[0];
     
     await pool.query(
-      'INSERT INTO company_statistics (company_id, company_created_at) VALUES ($1, $2)',
-      [company.id, new Date()]
-    );
+  'UPDATE players SET current_company_id = $1, username = $2 WHERE id = $3',
+  [company.id, username, ownerId]
+);
     
     await pool.query(
       'UPDATE players SET current_company_id = $1 WHERE id = $2',

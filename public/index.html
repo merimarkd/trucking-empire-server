@@ -163,6 +163,8 @@
       <p>Company Protocol</p>
       <div class="error" id="companyError"></div>
       <label>Company Name</label>
+      <label>Username</label>
+      <input type="text" id="companyUsername" placeholder="e.g., Supertrucker" maxlength="30">
       <input type="text" id="companyName" placeholder="e.g., Acme Trucking LLC">
       <label>Headquarters Location</label>
       <div class="form-group">
@@ -305,7 +307,11 @@ function showGameWindow(title, message, type) {
 
   async function handleCreateCompany() {
     const name = document.getElementById("companyName").value;
-    if (!name || !selectedLocation) { showError("company", "Company name and location required"); return; }
+    const username = document.getElementById("companyUsername").value.trim();
+    if (!username) { showError("company", "Username is required"); return; }
+    if (username.length < 3) { showError("company", "Username must be at least 3 characters"); return; }
+    if (!name) { showError("company", "Company name is required"); return; }
+    if (!selectedLocation) { showError("company", "Headquarters location is required"); return; }
     try {
       const res = await fetch(API + "/api/auth/create-company", {
         method: "POST",
@@ -314,11 +320,12 @@ function showGameWindow(title, message, type) {
           "Authorization": "Bearer " + token
         },
         body: JSON.stringify({
-          name: name,
-          hqCity: selectedLocation.name,
-          hqLatitude: selectedLocation.latitude,
-          hqLongitude: selectedLocation.longitude
-        })
+  name: name,
+  username: document.getElementById("companyUsername").value.trim(),
+  hqCity: selectedLocation.name,
+  hqLatitude: selectedLocation.latitude,
+  hqLongitude: selectedLocation.longitude
+})
       });
       const data = await res.json();
       if (!res.ok) { showError("company", data.error || "Failed"); return; }
