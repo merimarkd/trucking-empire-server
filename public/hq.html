@@ -554,6 +554,22 @@ function initSocket(playerId) {
     }).catch(err => console.error('Ping error:', err));
   }, 60 * 1000);
 }
+
+let afkTimer;
+function resetAFKTimer() {
+  clearTimeout(afkTimer);
+  afkTimer = setTimeout(() => {
+    showConfirmWindow(
+      'Session Expired',
+      'You have been inactive for 30 minutes and will be logged out.',
+      () => {
+        localStorage.removeItem('authToken');
+        window.location.href = '/index.html';
+      }
+    );
+  }, 30 * 60 * 1000);
+}
+
 document.addEventListener('mousemove', resetAFKTimer);
 document.addEventListener('keydown', resetAFKTimer);
 document.addEventListener('click', resetAFKTimer);
