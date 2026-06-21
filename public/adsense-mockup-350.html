@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AdSense Layout - 350px Sidebars</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { 
+      font-family: Arial, sans-serif; 
+      background: #0a1628; 
+      color: #c9d1d9; 
+      display: flex; 
+      height: 100vh;
+    }
+    .sidebar { 
+      width: 350px; 
+      background: rgba(13, 17, 23, 0.9); 
+      border: 1px solid rgba(88, 166, 255, 0.2);
+      padding: 20px;
+      overflow-y: auto;
+    }
+    .sidebar.left { border-right: 1px solid rgba(88, 166, 255, 0.2); }
+    .sidebar.right { border-left: 1px solid rgba(88, 166, 255, 0.2); }
+    .center { 
+      flex: 1; 
+      background: #0d1117; 
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+    .ad-placeholder { 
+      background: rgba(88, 166, 255, 0.1); 
+      border: 2px dashed rgba(88, 166, 255, 0.5); 
+      padding: 20px; 
+      margin: 15px 0;
+      border-radius: 4px;
+      text-align: center;
+      font-size: 12px;
+      color: #58a6ff;
+    }
+    .window { 
+      position: absolute; 
+      background: rgba(13, 17, 23, 0.95); 
+      border: 2px solid rgba(88, 166, 255, 0.4); 
+      padding: 20px; 
+      border-radius: 8px;
+      resize: both;
+      overflow: auto;
+      min-width: 300px;
+      min-height: 200px;
+      width: 600px;
+      height: 400px;
+      box-shadow: 0 0 30px rgba(88, 166, 255, 0.3);
+    }
+    .window h2 { color: #58a6ff; margin-bottom: 10px; }
+    .label { font-size: 11px; color: #8b949e; margin-top: 20px; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <div class="sidebar left">
+    <h3 style="color: #58a6ff; margin-bottom: 20px;">GOOGLE ADSENSE</h3>
+    <div class="ad-placeholder">AdSense 300x600</div>
+    <div class="ad-placeholder">AdSense 300x600</div>
+    <div class="label">Left Sidebar: 350px</div>
+  </div>
+
+  <div class="center">
+    <div class="window">
+      <h2>Resizable Game Window</h2>
+      <p>This window can be resized and dragged. Notice how the sidebars stay fixed on the left and right.</p>
+      <p>Drag the bottom-right corner to resize!</p>
+    </div>
+  </div>
+
+  <div class="sidebar right">
+    <h3 style="color: #58a6ff; margin-bottom: 20px;">GOOGLE ADSENSE</h3>
+    <div class="ad-placeholder">AdSense 300x600</div>
+    <div class="ad-placeholder">AdSense 300x600</div>
+    <div class="label">Right Sidebar: 350px</div>
+  </div>
+</body>
+</html>

@@ -120,7 +120,22 @@
 </div>   
 
 <script>
-  const API = 'http://143.198.176.234:5000';
+  const API = "https://game.merimarkdigital.com";
+
+  // Decode admin type from JWT token
+function getAdminTypeFromToken() {
+  const token = localStorage.getItem('authToken');
+  if (!token) return null;
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    return payload.adminType;
+  } catch (e) {
+    return null;
+  }
+}
+
+let userAdminType = getAdminTypeFromToken();
+  
   let allCompanies = [];
   let allPlayers = [];
 
@@ -202,14 +217,18 @@
   }
 
   async function loadDeletedPlayers() {
-    try {
-      const res = await fetch(API + '/api/game/admin/deleted-players');
-      const deletedPlayers = await res.json();
-      renderDeletedPlayers(deletedPlayers);
-    } catch (e) {
-      console.error(e);
-    }
+  try {
+    console.log('Loading deleted players...');
+    const res = await fetch(API + '/api/game/admin/deleted-players');
+    console.log('Response status:', res.status);
+    const deletedPlayers = await res.json();
+    console.log('Deleted players loaded:', deletedPlayers);
+    renderDeletedPlayers(deletedPlayers);
+    console.log('Rendered deleted players');
+  } catch (e) {
+    console.error('Error loading deleted players:', e);
   }
+}
 
   function filterCompanies() {
     const query = document.getElementById('companySearch').value.toLowerCase();
@@ -264,10 +283,96 @@
       <td>${p.deletion_reason}</td>
       <td>${new Date(p.deleted_at).toLocaleDateString()}</td>
       <td>${new Date(p.auto_purge_at).toLocaleDateString()}</td>
-      <td><button onclick="viewDeletedPlayer('${p.id}', '${p.username}')" style="padding: 5px 10px; background: rgba(88, 166, 255, 0.1); color: #58a6ff; border: 1px solid rgba(88, 166, 255, 0.3); font-size: 0.8rem; cursor: pointer; border-radius: 2px;">View</button></td>
+      <td>
+        <button onclick="viewDeletedPlayer('${p.id}', '${p.username}')" style="padding: 5px 10px; background: rgba(88, 166, 255, 0.1); color: #58a6ff; border: 1px solid rgba(88, 166, 255, 0.3); font-size: 0.8rem; cursor: pointer; border-radius: 2px;">View</button>
+        ${userAdminType === 'owner' ? `<button onclick="purgeDeletedPlayer('${p.id}')" style="padding: 5px 10px; background: rgba(255, 0, 0, 0.1); color: #f85149; border: 1px solid rgba(255, 0, 0, 0.3); font-size: 0.8rem; cursor: pointer; border-radius: 2px; margin-left: 4px;">Purge</button>` : ''}
+      </td>
     </tr>
   `).join('');
   document.getElementById('deletedTable').innerHTML = html || '<tr><td colspan="6">No deleted players</td></tr>';
+}
+
+async function purgeDeletedPlayer(playerId) {
+  showPurgeConfirmModal(playerId);
+}
+
+function showPurgeConfirmModal(playerId) {
+  const modal = document.createElement('div');
+  modal.id = 'purgeConfirmModal';
+  modal.style.cssText = `
+    position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    background: rgba(13,17,23,0.98); border: 2px solid rgba(248,81,73,0.5);
+    padding: 30px; border-radius: 8px; z-index: 10000;
+    min-width: 400px; box-shadow: 0 0 30px rgba(248,81,73,0.3);
+  `;
+  modal.innerHTML = `
+    <h2 style="color: #f85149; margin-bottom: 15px; font-size: 1.2rem;">⚠️ PERMANENT PURGE</h2>
+    <p style="color: #c9d1d9; margin-bottom: 10px;">This will permanently delete ALL data for this player.</p>
+    <p style="color: #c9d1d9; margin-bottom: 20px;">This cannot be undone. Are you sure?</p>
+    <div style="display: flex; gap: 10px; justify-content: flex-end;">
+      <button onclick="document.getElementById('purgeConfirmModal').remove()" style="padding: 8px 16px; background: rgba(88,166,255,0.1); color: #58a6ff; border: 1px solid rgba(88,166,255,0.3); border-radius: 4px; cursor: pointer;">Cancel</button>
+      <button onclick="executePurge('${playerId}')" style="padding: 8px 16px; background: rgba(248,81,73,0.2); color: #f85149; border: 1px solid rgba(248,81,73,0.5); border-radius: 4px; cursor: pointer;">Yes, Purge</button>
+    </div>
+  `;
+  document.body.appendChild(modal);
+}
+
+async function executePurge(playerId) {
+  try {
+    const token = localStorage.getItem('authToken');
+    const res = await fetch(API + '/api/game/admin/purge-deleted-player', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + token
+      },
+      body: JSON.stringify({ playerId })
+    });
+    const data = await res.json();
+    document.getElementById('purgeConfirmModal').remove();
+    
+    if (!res.ok) { 
+      showGameWindow('Purge Failed', 'Purge failed: ' + (data.error || 'Unknown error'));
+      return; 
+    }
+    showGameWindow('Success', '✓ Player permanently purged. All data deleted.');
+    loadDeletedPlayers();
+  } catch (e) {
+    showGameWindow('Error', 'Error: ' + e.message);
+  }
+}
+
+function showGameWindow(title, message) {
+  const overlay = document.createElement('div');
+  overlay.id = 'gameWindowOverlay';
+  overlay.style.cssText = `
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5); z-index: 9999;
+  `;
+  
+  const modal = document.createElement('div');
+  modal.style.cssText = `
+    position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    background: rgba(13,17,23,0.98); border: 2px solid rgba(88,166,255,0.4);
+    padding: 30px; border-radius: 8px; z-index: 10001;
+    min-width: 400px; box-shadow: 0 0 30px rgba(88,166,255,0.3);
+  `;
+  modal.innerHTML = `
+    <h2 style="color: #58a6ff; margin-bottom: 15px; font-size: 1.2rem;">${title}</h2>
+    <p style="color: #c9d1d9; margin-bottom: 20px;">${message}</p>
+    <button onclick="closeGameWindow()" style="padding: 8px 16px; background: rgba(88,166,255,0.1); color: #58a6ff; border: 1px solid rgba(88,166,255,0.3); border-radius: 4px; cursor: pointer; width: 100%;">Close</button>
+  `;
+  document.body.appendChild(overlay);
+  document.body.appendChild(modal);
+}
+
+function closeGameWindow() {
+  const overlay = document.querySelector('[id="gameWindowOverlay"]');
+  if (overlay) overlay.remove();
+  const modals = document.querySelectorAll('div[style*="position: fixed"]');
+  modals.forEach(m => {
+    if (m.style.zIndex === '10001') m.remove();
+  });
 }
 
 function viewDeletedPlayer(id, username) {

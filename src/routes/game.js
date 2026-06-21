@@ -233,6 +233,7 @@ router.get('/admin/companies', async (req, res) => {
     `);
     res.json(result.rows);
   } catch (error) {
+    console.error('Delete player error:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -482,14 +483,15 @@ router.post('/admin/delete-player', async (req, res) => {
     // Step 4: Archive to deleted players history
     const purgeDate = new Date(Date.now() + 6 * 30 * 24 * 60 * 60 * 1000); // 6 months
     await pool.query(`
-      INSERT INTO deleted_players_history (id, username, email, personal_credit_score, deletion_reason, deletion_notes, auto_purge_at)
-VALUES ($1, $2, $3, $4, $5, $6, $7)
-    `, [playerId, player.username, player.email, player.personal_credit_score, reason, notes, purgeDate]);
+      INSERT INTO deleted_players_history (username, email, personal_credit_score, deletion_reason, deletion_notes, auto_purge_at)
+VALUES ($1, $2, $3, $4, $5, $6)
+    `, [player.username, player.email, player.personal_credit_score, reason, notes, purgeDate]);
     
     // Step 5: Add to banned list
     await pool.query(`
       INSERT INTO banned_players (email, reason)
       VALUES ($1, $2)
+      ON CONFLICT (email) DO UPDATE SET reason = EXCLUDED.reason
     `, [player.email, notes]);
     
     // Step 6: Delete player
@@ -539,6 +541,126 @@ router.get('/admin/deleted-players/:playerId', async (req, res) => {
     
     res.json({ player, orphanedCompanies: companiesRes.rows });
   } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+    // Admin/Owner: Elevate player credentials
+router.post('/admin/elevate-player', async (req, res) => {
+  try {
+    const { playerId, newCredentials } = req.body;
+    const allowedCredentials = ['player', 'moderator', 'admin', 'owner'];
+    if (!allowedCredentials.includes(newCredentials)) {
+      return res.status(400).json({ error: 'Invalid credentials' });
+    }
+    await pool.query('UPDATE players SET credentials = $1 WHERE id = $2', [newCredentials, playerId]);
+    res.json({ success: true, message: `Player elevated to ${newCredentials}` });
+  } catch (error) {
+    console.error('Elevate player error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Owner: Permanently purge deleted player and ALL associated data
+router.post('/admin/purge-deleted-player', async (req, res) => {
+  try {
+    const { playerId } = req.body;
+    
+    // Get deleted player to find their email
+    const deletedRes = await pool.query('SELECT email FROM deleted_players_history WHERE id = $1', [playerId]);
+    if (deletedRes.rows.length === 0) {
+      return res.status(404).json({ error: 'Deleted player not found' });
+    }
+    const playerEmail = deletedRes.rows[0].email;
+
+    // Delete from banned_players
+    await pool.query('DELETE FROM banned_players WHERE email = $1', [playerEmail]);
+
+    // Find all companies owned by this player and delete related data
+    const companiesRes = await pool.query('SELECT id FROM companies WHERE owner_id = $1', [playerId]);
+    for (const company of companiesRes.rows) {
+      await pool.query('DELETE FROM loans WHERE company_id = $1', [company.id]);
+      await pool.query('DELETE FROM loan_payments WHERE company_id = $1', [company.id]);
+      await pool.query('DELETE FROM transactions WHERE company_id = $1', [company.id]);
+      await pool.query('DELETE FROM compliance_strikes WHERE company_id = $1', [company.id]);
+      await pool.query('DELETE FROM drivers WHERE company_id = $1', [company.id]);
+      await pool.query('DELETE FROM companies WHERE id = $1', [company.id]);
+    }
+
+    // Delete from deleted_players_history (final purge)
+    await pool.query('DELETE FROM deleted_players_history WHERE id = $1', [playerId]);
+
+    res.json({ success: true, message: 'Player permanently purged. All data deleted.' });
+  } catch (error) {
+    console.error('Purge deleted player error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Owner: Verify player data is completely purged
+router.post('/admin/verify-purge', async (req, res) => {
+  try {
+    const { playerId } = req.body;
+    
+    const checks = {
+      deletedHistory: 0,
+      bannedPlayers: 0,
+      companies: 0,
+      loans: 0,
+      drivers: 0,
+      transactions: 0,
+      strikes: 0
+    };
+
+    // Check deleted_players_history
+    const delRes = await pool.query('SELECT COUNT(*) as count FROM deleted_players_history WHERE id = $1', [playerId]);
+    checks.deletedHistory = parseInt(delRes.rows[0].count);
+
+    // Check banned_players (need to find email first - won't exist if purged)
+    // This won't find anything if already purged, which is correct
+
+    // Check companies owned by this player
+    const compRes = await pool.query('SELECT COUNT(*) as count FROM companies WHERE owner_id = $1', [playerId]);
+    checks.companies = parseInt(compRes.rows[0].count);
+
+    // Check loans tied to companies
+    const loanRes = await pool.query(`
+      SELECT COUNT(*) as count FROM loans 
+      WHERE company_id IN (SELECT id FROM companies WHERE owner_id = $1)
+    `, [playerId]);
+    checks.loans = parseInt(loanRes.rows[0].count);
+
+    // Check drivers tied to companies
+    const drvRes = await pool.query(`
+      SELECT COUNT(*) as count FROM drivers 
+      WHERE company_id IN (SELECT id FROM companies WHERE owner_id = $1)
+    `, [playerId]);
+    checks.drivers = parseInt(drvRes.rows[0].count);
+
+    // Check transactions
+    const txRes = await pool.query(`
+      SELECT COUNT(*) as count FROM transactions 
+      WHERE company_id IN (SELECT id FROM companies WHERE owner_id = $1)
+    `, [playerId]);
+    checks.transactions = parseInt(txRes.rows[0].count);
+
+    // Check compliance strikes
+    const strikeRes = await pool.query(`
+      SELECT COUNT(*) as count FROM compliance_strikes 
+      WHERE company_id IN (SELECT id FROM companies WHERE owner_id = $1)
+    `, [playerId]);
+    checks.strikes = parseInt(strikeRes.rows[0].count);
+
+    const totalRemaining = Object.values(checks).reduce((a, b) => a + b, 0);
+    
+    res.json({ 
+      success: true, 
+      purged: totalRemaining === 0,
+      remaining: checks,
+      totalRemaining 
+    });
+  } catch (error) {
+    console.error('Verify purge error:', error);
     res.status(500).json({ error: error.message });
   }
 });
