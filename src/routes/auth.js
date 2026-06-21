@@ -63,7 +63,6 @@ router.post('/signup', async (req, res) => {
 const verificationLink = `https://game.merimarkdigital.com/?verify=${verificationToken}`;
 
 try {
-  sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
   await sgMail.send({
     to: email,
