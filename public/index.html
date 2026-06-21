@@ -58,24 +58,37 @@
   transform: translateY(-50%);
   width: 28px;
   height: 28px;
-  background: none;
+  background: transparent;
   border: none;
+  box-shadow: none;
+  outline: none;
   cursor: pointer;
   padding: 0;
+  margin: 0;
   display: flex;
   align-items: center;
   justify-content: center;
   color: #8b949e;
+  transition: none;
 }
 
 .eye-toggle:hover {
+  background: transparent;
   color: #58a6ff;
+}
+
+.eye-toggle:focus,
+.eye-toggle:active {
+  background: transparent;
+  outline: none;
+  box-shadow: none;
 }
 
 .eye-toggle svg {
   width: 20px;
   height: 20px;
-}  </style>
+}  
+</style>
 </head>
 <body>
 
@@ -137,8 +150,9 @@
       <label>Confirm Password</label>
       <div class="password-field">
         <input type="password" id="signupConfirm" placeholder="password">
-        <button type="button" class="eye-toggle" onclick="togglePasswordVisibility('signupConfirm')">👁️</button>
-      </div>
+        <button type="button" class="eye-toggle" onclick="togglePasswordVisibility('signupConfirm', this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/><line x1="3" y1="3" x2="21" y2="21"/></svg>
+        </button>
       <button onclick="handleSignup()">CREATE ACCOUNT</button>
       <div class="link">Already have one? <a onclick="switchScreen(event, 'loginScreen')">Login</a></div>
     </div>
