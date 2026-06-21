@@ -184,6 +184,27 @@
 
   if (token) switchScreen(null, "companyScreen");
 
+  async function checkEmailVerification() {
+    const params = new URLSearchParams(window.location.search);
+    const verifyToken = params.get("verify");
+    if (!verifyToken) return;
+    try {
+      const res = await fetch(API + "/api/auth/verify-email?token=" + encodeURIComponent(verifyToken));
+      const data = await res.json();
+      window.history.replaceState({}, document.title, "/");
+      if (res.ok) {
+        switchScreen(null, "loginScreen");
+        showGameWindow("Email Verified", "Your account is now active. You can log in.", "success");
+      } else {
+        switchScreen(null, "loginScreen");
+        showGameWindow("Verification Failed", data.error || "This link is invalid or expired.", "error");
+      }
+    } catch (e) {
+      showGameWindow("Error", "Could not verify email. Please try again.", "error");
+    }
+  }
+  checkEmailVerification();
+
   function switchScreen(e, id) {
   if (e) e.preventDefault();
   
