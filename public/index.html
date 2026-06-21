@@ -189,7 +189,19 @@
   let selectedLocation = null;
   let searchTimeout;
 
-  if (token) switchScreen(null, "companyScreen");
+  if (token) {
+  fetch(API + "/api/auth/me", {
+    headers: { "Authorization": "Bearer " + token }
+  }).then(r => r.json()).then(data => {
+    if (data.current_company_id) {
+      window.location.href = '/hq.html';
+    } else {
+      switchScreen(null, "companyScreen");
+    }
+  }).catch(() => {
+    localStorage.removeItem('authToken');
+  });
+}
 
   async function checkEmailVerification() {
     const params = new URLSearchParams(window.location.search);
@@ -264,7 +276,16 @@ function showGameWindow(title, message, type) {
       }
       token = data.token;
       localStorage.setItem("authToken", token);
-      switchScreen(null, "companyScreen");
+      // Check if player already has a company
+      const meRes = await fetch(API + "/api/auth/me", {
+        headers: { "Authorization": "Bearer " + token }
+      });
+      const meData = await meRes.json();
+      if (meData.current_company_id) {
+        window.location.href = '/hq.html';
+      } else {
+        switchScreen(null, "companyScreen");
+      }
     } catch (e) {
       showError("login", "Network error - please try again");
     }
