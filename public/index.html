@@ -40,31 +40,42 @@
     .sidebar.right { border-left: 1px solid rgba(88, 166, 255, 0.2); }
     .main-content { flex: 1; }
     .ad-placeholder { background: rgba(88, 166, 255, 0.1); border: 2px dashed rgba(88, 166, 255, 0.5); padding: 20px; margin: 15px 0; border-radius: 4px; text-align: center; font-size: 12px; color: #58a6ff; }
-    .password-field {
-     position: relative;
-     display: flex;
-     align-items: center;
-    }
+.password-field {
+  position: relative;
+  margin-bottom: 20px;
+}
 
-    .password-field input {
-    flex: 1;
-    }
+.password-field input {
+  width: 100%;
+  margin-bottom: 0;
+  padding-right: 44px;
+}
 
-    .eye-toggle {
-    position: absolute;
-    right: 10px;
-    background: none;
-    border: none;
-    cursor: pointer;
-    font-size: 1.2rem;
-    padding: 5px;
-    color: #58a6ff;
-    }
+.eye-toggle {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 28px;
+  height: 28px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #8b949e;
+}
 
-   .eye-toggle:hover {
-   opacity: 0.7;
-   }
-  </style>
+.eye-toggle:hover {
+  color: #58a6ff;
+}
+
+.eye-toggle svg {
+  width: 20px;
+  height: 20px;
+}  </style>
 </head>
 <body>
 
@@ -100,7 +111,9 @@
       <label>Password</label>
       <div class="password-field">
         <input type="password" id="adminPassword" placeholder="password">
-        <button type="button" class="eye-toggle" onclick="togglePasswordVisibility('adminPassword')">👁️</button>
+        <button type="button" class="eye-toggle" onclick="togglePasswordVisibility('adminPassword', this)">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/><line x1="3" y1="3" x2="21" y2="21"/></svg>
+</button>
       </div>
       <button onclick="handleAdminLogin()">ADMIN LOGIN</button>
       <div class="link"><a onclick="switchScreen(event, 'loginScreen')">Back to Login</a></div>
@@ -117,7 +130,9 @@
       <label>Password</label>
       <div class="password-field">
         <input type="password" id="signupPassword" placeholder="password">
-        <button type="button" class="eye-toggle" onclick="togglePasswordVisibility('signupPassword')">👁️</button>
+        <button type="button" class="eye-toggle" onclick="togglePasswordVisibility('signupPassword', this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/><line x1="3" y1="3" x2="21" y2="21"/></svg>
+        </button>
       </div>
       <label>Confirm Password</label>
       <div class="password-field">
@@ -241,14 +256,16 @@ function showGameWindow(title, message, type) {
   }
 }
 
-  function togglePasswordVisibility(fieldId) {
+  function togglePasswordVisibility(fieldId, btn) {
     const field = document.getElementById(fieldId);
+    const eyeOpen = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>';
+    const eyeClosed = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/><line x1="3" y1="3" x2="21" y2="21"/></svg>';
     if (field.type === "password") {
       field.type = "text";
-      event.target.textContent = "👁️";
+      btn.innerHTML = eyeOpen;
     } else {
       field.type = "password";
-      event.target.textContent = "👁️‍🗨️";
+      btn.innerHTML = eyeClosed;
     }
   }
 
