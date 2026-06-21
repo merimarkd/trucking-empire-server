@@ -40,6 +40,30 @@
     .sidebar.right { border-left: 1px solid rgba(88, 166, 255, 0.2); }
     .main-content { flex: 1; }
     .ad-placeholder { background: rgba(88, 166, 255, 0.1); border: 2px dashed rgba(88, 166, 255, 0.5); padding: 20px; margin: 15px 0; border-radius: 4px; text-align: center; font-size: 12px; color: #58a6ff; }
+    .password-field {
+     position: relative;
+     display: flex;
+     align-items: center;
+    }
+
+    .password-field input {
+    flex: 1;
+    }
+
+    .eye-toggle {
+    position: absolute;
+    right: 10px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.2rem;
+    padding: 5px;
+    color: #58a6ff;
+    }
+
+   .eye-toggle:hover {
+   opacity: 0.7;
+   }
   </style>
 </head>
 <body>
@@ -74,10 +98,15 @@
       <label>Email</label>
       <input type="email" id="adminEmail" placeholder="admin@example.com">
       <label>Password</label>
-      <input type="password" id="adminPassword" placeholder="password">
-      <button onclick="handleAdminLogin()">LOGIN</button>
-      <div class="link"><a onclick="switchScreen(event, 'loginScreen')">Back to Player Login</a></div>
-    </div>
+<div class="password-field">
+  <input type="password" id="signupPassword" placeholder="password">
+  <button type="button" class="eye-toggle" onclick="togglePasswordVisibility('signupPassword')">👁️</button>
+</div>
+<label>Confirm Password</label>
+<div class="password-field">
+  <input type="password" id="signupConfirm" placeholder="password">
+  <button type="button" class="eye-toggle" onclick="togglePasswordVisibility('signupConfirm')">👁️</button>
+</div>
   </div>
 
   <div class="screen" id="signupScreen">
@@ -172,31 +201,41 @@
   }
 
   async function handleSignup() {
-    const email = document.getElementById("signupEmail").value.trim();
-    const password = document.getElementById("signupPassword").value;
-    const confirm = document.getElementById("signupConfirm").value;
-    
-    // Email format validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!email) { showError("signup", "Email is required"); return; }
-    if (!emailRegex.test(email)) { showError("signup", "Invalid email format"); return; }
-    if (!password) { showError("signup", "Password is required"); return; }
-    if (password.length < 8) { showError("signup", "Password must be at least 8 characters"); return; }
-    if (password !== confirm) { showError("signup", "Passwords do not match"); return; }
-    
-    try {
-      const res = await fetch(API + "/api/auth/signup", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password })
-      });
-      const data = await res.json();
-      if (!res.ok) { showError("signup", data.error || "Signup failed"); return; }
-      token = data.token;
-      localStorage.setItem("authToken", token);
-      switchScreen(null, "companyScreen");
-    } catch (e) {
-      showError("signup", "Network error - please try again");
+  const email = document.getElementById("signupEmail").value.trim();
+  const password = document.getElementById("signupPassword").value;
+  const confirm = document.getElementById("signupConfirm").value;
+
+  // Email format validation
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!email) { showError("signup", "Email is required"); return; }
+  if (!emailRegex.test(email)) { showError("signup", "Invalid email format"); return; }
+  if (!password) { showError("signup", "Password is required"); return; }
+  if (password.length < 8) { showError("signup", "Password must be at least 8 characters"); return; }
+  if (password !== confirm) { showError("signup", "Passwords do not match"); return; }
+
+  try {
+    const res = await fetch(API + "/api/auth/signup", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password, confirmPassword: confirm })
+    });
+    const data = await res.json();
+    if (!res.ok) { showError("signup", data.error || "Signup failed"); return; }
+    showGameWindow("Check Your Email", `Verification link sent to ${email}. Click the link to activate your account.`, "success");
+    setTimeout(() => switchScreen(null, "loginScreen"), 3000);
+  } catch (e) {
+    showError("signup", "Network error - please try again");
+  }
+}
+
+  function togglePasswordVisibility(fieldId) {
+    const field = document.getElementById(fieldId);
+    if (field.type === "password") {
+      field.type = "text";
+      event.target.textContent = "👁️";
+    } else {
+      field.type = "password";
+      event.target.textContent = "👁️‍🗨️";
     }
   }
 
