@@ -412,6 +412,13 @@ router.get('/search-cities', async (req, res) => {
           state: stateAbbr
         };
       })
+      .slice(0, 10);
+    res.json({ cities });
+  } catch (error) {
+    console.error('Error searching cities:', error);
+    res.status(500).json({ error: 'Failed to search cities' });
+  }
+});
 
 // Admin: Get all players
 router.get('/admin/players', async (req, res) => {
