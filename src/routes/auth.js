@@ -66,17 +66,26 @@ try {
   const sgMail = require('@sendgrid/mail');
   sgMail.setApiKey(process.env.SENDGRID_API_KEY);
   await sgMail.send({
-    to: email,
-    from: 'noreply@game.merimarkdigital.com',
-    subject: 'Verify Your Freight Empire Account',
-    html: `
-      <h2>Welcome to Freight Empire!</h2>
-      <p>Click the link below to verify your email and activate your account:</p>
-      <a href="${verificationLink}" style="background-color: #58a6ff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">Verify Email</a>
-      <p>This link expires in 24 hours.</p>
-      <p>If you did not create this account, you can safely ignore this email.</p>
-    `
-  });
+        to: email,
+        from: {
+          email: 'noreply@game.merimarkdigital.com',
+          name: 'Freight Empire'
+        },
+        subject: 'Verify Your Freight Empire Account',
+        text: `Welcome to Freight Empire! Verify your email by visiting this link: ${verificationLink} — This link expires in 24 hours. If you did not create this account, ignore this email.`,
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 500px; margin: 0 auto;">
+            <h2 style="color: #1f6feb;">Welcome to Freight Empire</h2>
+            <p>Thanks for creating your account. Please confirm your email address to activate it.</p>
+            <p style="margin: 24px 0;">
+              <a href="${verificationLink}" style="background-color: #1f6feb; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block;">Verify Email Address</a>
+            </p>
+            <p>Or paste this link into your browser:<br>
+            <a href="${verificationLink}">${verificationLink}</a></p>
+            <p style="color: #888; font-size: 13px;">This link expires in 24 hours. If you did not create this account, you can safely ignore this email.</p>
+          </div>
+        `
+      });
 } catch (emailError) {
   console.error('Failed to send verification email:', emailError);
   return res.status(500).json({ error: 'Failed to send verification email. Please try again.' });
