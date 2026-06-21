@@ -98,15 +98,13 @@
       <label>Email</label>
       <input type="email" id="adminEmail" placeholder="admin@example.com">
       <label>Password</label>
-<div class="password-field">
-  <input type="password" id="signupPassword" placeholder="password">
-  <button type="button" class="eye-toggle" onclick="togglePasswordVisibility('signupPassword')">👁️</button>
-</div>
-<label>Confirm Password</label>
-<div class="password-field">
-  <input type="password" id="signupConfirm" placeholder="password">
-  <button type="button" class="eye-toggle" onclick="togglePasswordVisibility('signupConfirm')">👁️</button>
-</div>
+      <div class="password-field">
+        <input type="password" id="adminPassword" placeholder="password">
+        <button type="button" class="eye-toggle" onclick="togglePasswordVisibility('adminPassword')">👁️</button>
+      </div>
+      <button onclick="handleAdminLogin()">ADMIN LOGIN</button>
+      <div class="link"><a onclick="switchScreen(event, 'loginScreen')">Back to Login</a></div>
+    </div>
   </div>
 
   <div class="screen" id="signupScreen">
