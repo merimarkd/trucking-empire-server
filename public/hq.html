@@ -431,8 +431,10 @@ function openDepartmentWindow(departmentName, departmentId) {
   const screenHeight = globalThis.innerHeight;
   const windowWidth = 1200;
   const windowHeight = 700;
-  const left = (screenWidth - windowWidth) / 2;
-  const top = (screenHeight - windowHeight) / 2;
+  const headerHeight = document.querySelector('.hq-header').offsetHeight;
+  const sidebarWidth = 350;
+  const left = sidebarWidth + (screenWidth - sidebarWidth * 2 - windowWidth) / 2;
+  const top = headerHeight + (screenHeight - headerHeight - windowHeight) / 2;
   
   const window = document.createElement('div');
   window.classList.add('game-window');
@@ -707,8 +709,9 @@ function openTabWindow(tabId, tabName) {
   tabWindow.classList.add('game-window');
   tabWindow.style.width = '600px';
   tabWindow.style.height = '400px';
-  tabWindow.style.left = (Math.random() * 200 + 100) + 'px';
-  tabWindow.style.top = (Math.random() * 200 + 100) + 'px';
+  const headerHeight = document.querySelector('.hq-header').offsetHeight;
+  tabWindow.style.left = (350 + Math.random() * 200 + 50) + 'px';
+  tabWindow.style.top = (headerHeight + Math.random() * 100 + 20) + 'px';
   
   const tabContents = {
     'payroll': '<p>Payroll Management - Coming Soon</p>',
