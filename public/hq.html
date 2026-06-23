@@ -43,7 +43,7 @@
     .sidebar.left { border-right: 1px solid var(--border); }
     .sidebar.right { border-left: 1px solid var(--border); }
     #bgVideo {
-      position: fixed;
+      position: absolute;
       top: 0;
       left: 0;
       width: 100%;
@@ -132,15 +132,15 @@
 <script src="/socket.io/socket.io.js"></script>
 </head>
 <body>
-<video autoplay loop muted playsinline id="bgVideo">
-  <source src="/animation1.mp4" type="video/mp4">
-</video>
 <div class="sidebar left">
   <h3 style="color: #00b4dc; margin-bottom: 20px;">GOOGLE ADSENSE</h3>
   <div class="ad-placeholder">AdSense 300x600</div>
   <div class="ad-placeholder">AdSense 300x600</div>
 </div>
 <div class="hq-container">
+<video autoplay loop muted playsinline id="bgVideo">
+  <source src="/animation1.mp4" type="video/mp4">
+</video>
   <div class="hq-header">
   <div style="display: flex; align-items: center; gap: 12px;">
     <button class="hq-dashboard-btn" onclick="openDepartmentWindow()">DASHBOARD</button>
