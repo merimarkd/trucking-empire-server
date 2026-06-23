@@ -199,6 +199,74 @@ console.log('✓ Migration: Added hq_state to companies');
     `, ['ahelsleyy@gmail.com', hashedAdminPassword]);
     console.log('✓ Setup: Owner admin account created');
 
+    // Create market_items table
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS market_items (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        category VARCHAR(100) NOT NULL,
+        subcategory VARCHAR(100) NOT NULL,
+        name VARCHAR(255) NOT NULL,
+        description TEXT,
+        base_price DECIMAL(15,2) DEFAULT 0,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+    console.log('✓ Migration: Created market_items table');
+
+    // Create market_orders table
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS market_orders (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        item_id UUID NOT NULL REFERENCES market_items(id),
+        company_id UUID NOT NULL REFERENCES companies(id),
+        order_type VARCHAR(4) NOT NULL CHECK (order_type IN ('buy', 'sell')),
+        quantity INTEGER NOT NULL,
+        price_per_unit DECIMAL(15,2) NOT NULL,
+        min_quantity INTEGER DEFAULT 1,
+        expires_at TIMESTAMP NOT NULL,
+        is_active BOOLEAN DEFAULT TRUE,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+    console.log('✓ Migration: Created market_orders table');
+
+    // Create market_price_history table
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS market_price_history (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        item_id UUID NOT NULL REFERENCES market_items(id),
+        avg_price DECIMAL(15,2) NOT NULL,
+        volume INTEGER DEFAULT 0,
+        recorded_date DATE NOT NULL,
+        UNIQUE(item_id, recorded_date)
+      )
+    `);
+    console.log('✓ Migration: Created market_price_history table');
+
+    // Seed initial market items
+    await pool.query(`
+      INSERT INTO market_items (category, subcategory, name, description, base_price) VALUES
+      ('Trucks', 'Kenworth', 'Kenworth T680', 'Long-haul Class 8 sleeper', 185000),
+      ('Trucks', 'Kenworth', 'Kenworth W900', 'Iconic long-nose Class 8', 175000),
+      ('Trucks', 'Peterbilt', 'Peterbilt 379', 'Classic long-nose Class 8', 170000),
+      ('Trucks', 'Peterbilt', 'Peterbilt 389', 'Modern long-nose Class 8', 180000),
+      ('Trucks', 'Freightliner', 'Freightliner Cascadia', 'Aerodynamic Class 8 sleeper', 165000),
+      ('Trucks', 'Mack', 'Mack Anthem', 'Heavy duty Class 8', 160000),
+      ('Trailers', 'Dry Van', '53ft Dry Van', 'Standard enclosed trailer', 45000),
+      ('Trailers', 'Reefer', '53ft Refrigerated', 'Temperature controlled trailer', 65000),
+      ('Trailers', 'Flatbed', '48ft Flatbed', 'Open deck flatbed trailer', 35000),
+      ('Trailers', 'Tanker', 'Fuel Tanker', 'Liquid bulk tanker', 55000),
+      ('Trailers', 'Tanker', 'Chemical Tanker', 'Hazmat liquid tanker', 75000),
+      ('Fuel', 'Diesel', 'Diesel - National Average', 'National average diesel price per gallon', 3.85),
+      ('Parts & Equipment', 'Engine Parts', 'Oil Filter', 'Standard Class 8 oil filter', 45),
+      ('Parts & Equipment', 'Engine Parts', 'Air Filter', 'Heavy duty air filter', 85),
+      ('Parts & Equipment', 'Engine Parts', 'Fuel Filter', 'Primary fuel filter', 65),
+      ('Parts & Equipment', 'Tires', 'Drive Tire 11R22.5', 'Standard drive axle tire', 450),
+      ('Parts & Equipment', 'Tires', 'Steer Tire 295/75R22.5', 'Standard steer axle tire', 550)
+      ON CONFLICT DO NOTHING
+    `);
+    console.log('✓ Migration: Seeded market items');
+
     // Create admins table
     await pool.query(`
       CREATE TABLE IF NOT EXISTS admins (
