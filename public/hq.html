@@ -5,7 +5,30 @@
   <title>Freight Empire - HQ</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Arial', sans-serif; background: #0d1117; color: #c9d1d9; overflow: hidden; }
+    :root {
+      --bg:         #0a0c0f;
+      --panel:      rgba(8, 12, 18, 0.97);
+      --border:     rgba(0, 180, 220, 0.22);
+      --border-hi:  rgba(0, 180, 220, 0.55);
+      --teal:       #00b4dc;
+      --amber:      #e87c2a;
+      --text:       #a8b4c0;
+      --text-hi:    #d4e0e8;
+      --text-muted: #566470;
+      --danger:     #c84040;
+    }
+
+    body {
+      font-family: 'Courier New', Courier, monospace;
+      background: var(--bg);
+      color: var(--text);
+      overflow: hidden;
+      height: 100vh;
+      display: flex;
+      align-items: stretch;
+      margin: 0;
+      padding: 0;
+    }
     .hq-container { width: 100vw; height: 100vh; position: relative; display: flex; flex-direction: column; }
     .hq-header { background: rgba(13, 17, 23, 0.9); border-bottom: 2px solid rgba(88, 166, 255, 0.3); padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; position: relative; z-index: 2000; }
     .hq-title { text-align: center; flex: 1; font-size: 1.5rem; color: #58a6ff; font-weight: bold; }
@@ -75,6 +98,14 @@
 <script src="/socket.io/socket.io.js"></script>
 </head>
 <body>
+<video autoplay loop muted playsinline id="bgVideo">
+  <source src="/animation1.mp4" type="video/mp4">
+</video>
+<div class="sidebar left">
+  <h3 style="color: #00b4dc; margin-bottom: 20px;">GOOGLE ADSENSE</h3>
+  <div class="ad-placeholder">AdSense 300x600</div>
+  <div class="ad-placeholder">AdSense 300x600</div>
+</div>
 <div class="hq-container">
   <div class="hq-header">
   <div style="display: flex; align-items: center; gap: 12px;">
@@ -760,5 +791,10 @@ function updateClock() {
   document.getElementById('headerTime').textContent = time + ' ' + tzName;
 }
 </script>
+<div class="sidebar right">
+  <h3 style="color: #00b4dc; margin-bottom: 20px;">GOOGLE ADSENSE</h3>
+  <div class="ad-placeholder">AdSense 300x600</div>
+  <div class="ad-placeholder">AdSense 300x600</div>
+</div>
 </body>
 </html>
