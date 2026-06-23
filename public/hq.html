@@ -797,28 +797,23 @@ function makeResizable(element) {
 function makeDraggable(element) {
   const header = element.querySelector('.window-header');
   let offsetX = 0, offsetY = 0;
-  
   header.addEventListener('mousedown', (e) => {
-    offsetX = e.clientX - element.offsetLeft;
-    offsetY = e.clientY - element.offsetTop;
-    
+    const rect = element.getBoundingClientRect();
+    offsetX = e.clientX - rect.left;
+    offsetY = e.clientY - rect.top;
     const move = (e) => {
       const sidebarWidth = 350;
-      const minX = sidebarWidth;
-      const maxX = window.innerWidth - sidebarWidth - element.offsetWidth;
-      const minY = 0;
-      const maxY = window.innerHeight - element.offsetHeight;
-      const newX = Math.min(Math.max(e.clientX - offsetX, minX), maxX);
-      const newY = Math.min(Math.max(e.clientY - offsetY, minY), maxY);
-      element.style.left = newX + 'px';
-      element.style.top = newY + 'px';
+      const newX = e.clientX - offsetX;
+      const newY = e.clientY - offsetY;
+      const clampedX = Math.min(Math.max(newX, sidebarWidth), window.innerWidth - sidebarWidth - element.offsetWidth);
+      const clampedY = Math.min(Math.max(newY, 0), window.innerHeight - element.offsetHeight);
+      element.style.left = clampedX + 'px';
+      element.style.top = clampedY + 'px';
     };
-    
     const stop = () => {
       document.removeEventListener('mousemove', move);
       document.removeEventListener('mouseup', stop);
     };
-    
     document.addEventListener('mousemove', move);
     document.addEventListener('mouseup', stop);
   });
