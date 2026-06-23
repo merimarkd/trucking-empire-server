@@ -60,7 +60,7 @@ router.post('/signup', async (req, res) => {
     );
 
     // Send verification email
-const verificationLink = `https://game.merimarkdigital.com/?verify=${verificationToken}`;
+const verificationLink = `https://freightempire.merimarkdigital.com/?verify=${verificationToken}`;
 
 try {
   const sgMail = require('@sendgrid/mail');
