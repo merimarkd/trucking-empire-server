@@ -12,6 +12,7 @@ const authRoutes = require('./src/routes/auth');
 const gameRoutes = require('./src/routes/game');
 const statsRoutes = require('./src/routes/stats');
 const bankingRoutes = require('./src/routes/banking');
+const marketRoutes = require('./src/routes/market');
 const { initializeScheduler } = require('./src/jobs/scheduler');
 
 const app = express();
@@ -48,6 +49,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/game', gameRoutes);
 app.use('/api/stats', statsRoutes);
 app.use('/api/banking', bankingRoutes);
+app.use('/api/market', marketRoutes);
 
 app.get('/', (req, res) => {
   res.sendFile(__dirname + '/public/index.html');
