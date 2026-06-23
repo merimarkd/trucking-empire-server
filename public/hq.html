@@ -822,17 +822,17 @@ function makeDraggable(element) {
       document.removeEventListener('mousemove', move);
       document.removeEventListener('mouseup', stop);
       const sidebarWidth = 350;
+      const headerHeight = document.querySelector('.hq-header').offsetHeight;
       const rect = element.getBoundingClientRect();
       const overLeft = rect.left < sidebarWidth;
       const overRight = rect.right > window.innerWidth - sidebarWidth;
-      if (overLeft || overRight) {
-        let safeX;
-        if (overLeft) {
-          safeX = sidebarWidth;
-        } else {
-          safeX = window.innerWidth - sidebarWidth - rect.width;
-        }
-        const safeY = Math.min(Math.max(rect.top, 0), window.innerHeight - rect.height);
+      const overTop = rect.top < headerHeight;
+      if (overLeft || overRight || overTop) {
+        let safeX = rect.left;
+        let safeY = rect.top;
+        if (overLeft) safeX = sidebarWidth;
+        if (overRight) safeX = window.innerWidth - sidebarWidth - rect.width;
+        if (overTop) safeY = headerHeight;
         element.style.transition = 'left 0.2s, top 0.2s';
         element.style.left = safeX + 'px';
         element.style.top = safeY + 'px';
