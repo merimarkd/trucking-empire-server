@@ -240,21 +240,33 @@ async function loadHQData() {
       window.location.href = '/';
       return;
     }
-    
     const playerRes = await fetch(API + '/api/auth/me', {
       headers: { 'Authorization': 'Bearer ' + authToken }
     });
+    if (!playerRes.ok) {
+      window.location.href = '/';
+      return;
+    }
     const player = await playerRes.json();
-    
-    const companyRes = await fetch(API + '/api/game/hq/' + player.current_company_id);
+    if (!player.current_company_id) {
+      window.location.href = '/';
+      return;
+    }
+    const companyRes = await fetch(API + '/api/game/hq/' + player.current_company_id, {
+      headers: { 'Authorization': 'Bearer ' + authToken }
+    });
+    if (!companyRes.ok) {
+      window.location.href = '/';
+      return;
+    }
     companyData = await companyRes.json();
-    
     document.getElementById('headerUsername').textContent = player.username || '';
     initSocket(player.id);
     setupHotspots();
     // createParticleNetwork(); // Disabled - using video background instead
   } catch (error) {
     console.error('Error loading HQ data:', error);
+    window.location.href = '/';
   }
 }
 
