@@ -775,8 +775,10 @@ function openTabWindow(tabId, tabName) {
   const tabWindow = document.createElement('div');
   tabWindow.id = 'tab-' + tabId;
   tabWindow.classList.add('game-window');
-  tabWindow.style.width = '600px';
-  tabWindow.style.height = '400px';
+  tabWindow.style.width = '1848px';
+  tabWindow.style.height = '1157px';
+  tabWindow.style.left = '757px';
+  tabWindow.style.top = '92px';
   
   const tabContents = {
     'payroll': '<p>Payroll Management - Coming Soon</p>',
@@ -797,8 +799,8 @@ function openTabWindow(tabId, tabName) {
   if (tabId === 'market') {
     tabWindow.style.width = '1848px';
     tabWindow.style.height = '1157px';
-    tabWindow.style.left = '487px';
-    tabWindow.style.top = '97px';
+    tabWindow.style.left = '757px';
+    tabWindow.style.top = '92px';
     tabWindow.innerHTML = `
       <div class="window-header">
         <span>CONTINENTAL FREIGHT EXCHANGE</span>
