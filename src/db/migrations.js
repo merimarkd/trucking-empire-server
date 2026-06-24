@@ -255,6 +255,16 @@ console.log('✓ Migration: Added hq_state to companies');
     `);
     console.log('✓ Migration: Cleaned duplicate market items');
 
+    // Add unique constraint to market_items if not exists
+    await pool.query(`
+      ALTER TABLE market_items 
+      DROP CONSTRAINT IF EXISTS market_items_category_subcategory_name_key;
+      ALTER TABLE market_items 
+      ADD CONSTRAINT market_items_category_subcategory_name_key 
+      UNIQUE (category, subcategory, name);
+    `);
+    console.log('✓ Migration: Added unique constraint to market_items');
+
     // Seed initial market items
     await pool.query(`
       INSERT INTO market_items (category, subcategory, name, description, base_price) VALUES
