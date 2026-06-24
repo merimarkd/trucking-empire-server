@@ -244,6 +244,17 @@ console.log('✓ Migration: Added hq_state to companies');
     `);
     console.log('✓ Migration: Created market_price_history table');
 
+    // Clean up duplicate market items
+    await pool.query(`
+      DELETE FROM market_items
+      WHERE id NOT IN (
+        SELECT MIN(id::text)::uuid
+        FROM market_items
+        GROUP BY category, subcategory, name
+      )
+    `);
+    console.log('✓ Migration: Cleaned duplicate market items');
+
     // Seed initial market items
     await pool.query(`
       INSERT INTO market_items (category, subcategory, name, description, base_price) VALUES
