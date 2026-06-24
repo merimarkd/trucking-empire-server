@@ -67,14 +67,14 @@
     .hq-body { flex: 1; display: flex; flex-direction: row; overflow: hidden; }
     .hq-header { background: rgba(13, 17, 23, 0.9); border-bottom: 2px solid rgba(88, 166, 255, 0.3); padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; position: relative; z-index: 2000; }
     .hq-title { text-align: center; flex: 1; font-size: 1.5rem; color: #58a6ff; font-weight: bold; }
-    .hq-dashboard-btn { background: rgba(88, 166, 255, 0.1); border: 1px solid rgba(88, 166, 255, 0.4); color: #58a6ff; padding: 8px 15px; border-radius: 2px; cursor: pointer; font-weight: bold; font-size: 0.9rem; transition: all 0.2s ease; }
+    .hq-dashboard-btn { background: rgba(88, 166, 255, 0.1); border: 1px solid rgba(88, 166, 255, 0.4); color: #58a6ff; padding: 8px 15px; border-radius: 2px; cursor: pointer; font-weight: bold; font-size: 1rem; transition: all 0.2s ease; }
     .hq-dashboard-btn:hover { background: rgba(88, 166, 255, 0.2); border-color: #58a6ff; }
-    .anim-toggle { background: rgba(88, 166, 255, 0.1); border: 1px solid rgba(88, 166, 255, 0.4); color: #58a6ff; padding: 5px 12px; border-radius: 2px; cursor: pointer; font-size: 0.9rem; transition: all 0.2s ease; margin-left: 10px; z-index: 2000; position: relative; }
+    .anim-toggle { background: rgba(88, 166, 255, 0.1); border: 1px solid rgba(88, 166, 255, 0.4); color: #58a6ff; padding: 5px 12px; border-radius: 2px; cursor: pointer; font-size: 1rem; transition: all 0.2s ease; margin-left: 10px; z-index: 2000; position: relative; }
     .anim-toggle:hover { background: rgba(88, 166, 255, 0.2); border-color: #58a6ff; }
     .anim-toggle.off { opacity: 0.4; color: #8b949e; }
-    .hq-logout-btn { background: rgba(248, 81, 73, 0.1); border: 1px solid rgba(248, 81, 73, 0.4); color: #f85149; padding: 5px 12px; border-radius: 2px; cursor: pointer; font-size: 0.9rem; transition: all 0.2s ease; margin-left: 10px; }
+    .hq-logout-btn { background: rgba(248, 81, 73, 0.1); border: 1px solid rgba(248, 81, 73, 0.4); color: #f85149; padding: 5px 12px; border-radius: 2px; cursor: pointer; font-size: 1rem; transition: all 0.2s ease; margin-left: 10px; }
     .hq-logout-btn:hover { background: rgba(248, 81, 73, 0.2); border-color: #f85149; }
-    .hq-stats { display: flex; gap: 20px; align-items: center; color: #8b949e; font-size: 0.9rem; font-family: monospace; }
+    .hq-stats { display: flex; gap: 20px; align-items: center; color: #8b949e; font-size: 1rem; font-family: monospace; }
     .hq-stats::before { content: '|'; color: rgba(88, 166, 255, 0.3); margin-right: 10px; }
     .hq-time { color: #8b949e; font-size: 1rem; font-family: monospace; }
     .hq-content { flex: 1; position: relative; overflow: hidden; background: transparent; }
@@ -88,14 +88,14 @@
     .hotspot:hover { filter: drop-shadow(0 0 10px rgba(88, 166, 255, 0.6)); }
     .hotspot-rect { fill: transparent; stroke: transparent; stroke-width: 2; }
     .hotspot:hover .hotspot-rect { stroke: rgba(88, 166, 255, 0.8); }
-    .tooltip { position: fixed; background: rgba(13, 17, 23, 0.95); border: 1px solid #58a6ff; color: #58a6ff; padding: 8px 12px; border-radius: 4px; font-size: 0.85rem; pointer-events: none; z-index: 1000; white-space: nowrap; }
+    .tooltip { position: fixed; background: rgba(13, 17, 23, 0.95); border: 1px solid #58a6ff; color: #58a6ff; padding: 8px 12px; border-radius: 4px; font-size: 1.05rem; pointer-events: none; z-index: 1000; white-space: nowrap; }
     .department-menu { position: fixed; background: rgba(13, 17, 23, 0.95); border: 2px solid rgba(88, 166, 255, 0.5); border-radius: 4px; padding: 20px; min-width: 250px; box-shadow: 0 0 20px rgba(88, 166, 255, 0.3); z-index: 2000; }
     .department-menu h3 { color: #58a6ff; margin-bottom: 15px; border-bottom: 1px solid rgba(88, 166, 255, 0.3); padding-bottom: 10px; }
     .department-item { padding: 10px; margin: 8px 0; background: rgba(88, 166, 255, 0.1); border: 1px solid rgba(88, 166, 255, 0.2); border-radius: 2px; cursor: pointer; transition: all 0.2s ease; color: #c9d1d9; }
     .department-item:hover { background: rgba(88, 166, 255, 0.2); border-color: #58a6ff; color: #58a6ff; }
     .game-window { position: fixed; background: rgba(13, 17, 23, 0.95); border: 2px solid rgba(88, 166, 255, 0.4); border-radius: 4px; display: flex; flex-direction: column; left: 400px; top: 50px; z-index: 1000; }
     .window-header { background: rgba(88, 166, 255, 0.1); border-bottom: 1px solid rgba(88, 166, 255, 0.3); padding: 12px 15px; color: #58a6ff; font-weight: bold; display: flex; justify-content: space-between; align-items: center; cursor: move; user-select: none; }
-    .window-close { background: rgba(248, 81, 73, 0.2); border: 1px solid rgba(248, 81, 73, 0.4); color: #f85149; padding: 5px 10px; border-radius: 2px; cursor: pointer; font-size: 0.8rem; transition: all 0.2s ease; }
+    .window-close { background: rgba(248, 81, 73, 0.2); border: 1px solid rgba(248, 81, 73, 0.4); color: #f85149; padding: 5px 10px; border-radius: 2px; cursor: pointer; font-size: 0.92rem; transition: all 0.2s ease; }
     .window-close:hover { background: rgba(248, 81, 73, 0.3); border-color: #f85149; }
     .window-content { flex: 1; padding: 15px; overflow-y: auto; color: #c9d1d9; }
     @keyframes npc-bob { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-5px); } }
@@ -104,93 +104,93 @@
     .ops-main { display: flex; flex: 1; overflow: hidden; min-height: 0; }
     .ops-sidebar { width: 180px; background: rgba(13, 17, 23, 0.7); border-right: 1px solid rgba(88, 166, 255, 0.3); overflow-y: auto; height: 100%; }
     .ops-section { padding: 15px 10px; border-bottom: 1px solid rgba(88, 166, 255, 0.2); }
-    .ops-section-title { color: #58a6ff; font-size: 0.8rem; font-weight: bold; margin-bottom: 8px; opacity: 0.7; }
-    .ops-tab { padding: 8px 10px; margin: 4px 0; background: rgba(88, 166, 255, 0.05); border-left: 2px solid transparent; cursor: pointer; font-size: 0.9rem; color: #c9d1d9; transition: all 0.2s ease; }
+    .ops-section-title { color: #58a6ff; font-size: 0.92rem; font-weight: bold; margin-bottom: 8px; opacity: 0.7; }
+    .ops-tab { padding: 8px 10px; margin: 4px 0; background: rgba(88, 166, 255, 0.05); border-left: 2px solid transparent; cursor: pointer; font-size: 1rem; color: #c9d1d9; transition: all 0.2s ease; }
     .ops-tab:hover { background: rgba(88, 166, 255, 0.15); border-left-color: #58a6ff; }
     .ops-tab.active { background: rgba(88, 166, 255, 0.2); border-left-color: #58a6ff; color: #58a6ff; }
     .ops-content { flex: 1; display: flex; flex-direction: column; }
     .ops-header { background: rgba(88, 166, 255, 0.05); border-bottom: 1px solid rgba(88, 166, 255, 0.2); padding: 15px; }
     .ops-company-info { display: flex; justify-content: space-between; align-items: center; }
     .ops-company-name { font-size: 1.2rem; color: #58a6ff; font-weight: bold; }
-    .ops-stats { display: flex; gap: 30px; font-size: 0.9rem; color: #8b949e; }
+    .ops-stats { display: flex; gap: 30px; font-size: 1rem; color: #8b949e; }
     .ops-tab-content { flex: 1; padding: 20px; overflow-y: auto; }
-    .ops-players-online { font-size: 0.85rem; color: #8b949e; margin-left: 30px; }
+    .ops-players-online { font-size: 1.05rem; color: #8b949e; margin-left: 30px; }
     .ops-news-container { display: flex; flex-direction: column; height: 100%; }
     .ops-ticker { background: rgba(88, 166, 255, 0.05); border-bottom: 1px solid rgba(88, 166, 255, 0.2); padding: 10px; overflow: hidden; height: 40px; }
-    .ticker-text { color: #58a6ff; font-size: 0.9rem; white-space: nowrap; animation: scroll-left 30s linear infinite; }
+    .ticker-text { color: #58a6ff; font-size: 1rem; white-space: nowrap; animation: scroll-left 30s linear infinite; }
     @keyframes scroll-left { from { transform: translateX(100%); } to { transform: translateX(-100%); } }
     .ops-news-tabs { display: flex; gap: 10px; padding: 15px; border-bottom: 1px solid rgba(88, 166, 255, 0.2); }
-    .news-tab { background: transparent; border: none; color: #8b949e; cursor: pointer; padding: 5px 15px; border-bottom: 2px solid transparent; transition: all 0.2s ease; font-size: 0.9rem; }
+    .news-tab { background: transparent; border: none; color: #8b949e; cursor: pointer; padding: 5px 15px; border-bottom: 2px solid transparent; transition: all 0.2s ease; font-size: 1rem; }
     .news-tab:hover { color: #58a6ff; }
     .news-tab.active { color: #58a6ff; border-bottom-color: #58a6ff; }
     .ops-news-feed { flex: 1; overflow-y: auto; padding: 15px; }
     .news-item { margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid rgba(88, 166, 255, 0.1); }
-    .news-headline { color: #58a6ff; font-weight: bold; font-size: 0.95rem; margin-bottom: 5px; }
-    .news-meta { color: #8b949e; font-size: 0.8rem; margin-bottom: 8px; }
-    .news-body { color: #c9d1d9; font-size: 0.9rem; line-height: 1.4; }
+    .news-headline { color: #58a6ff; font-weight: bold; font-size: 1.05rem; margin-bottom: 5px; }
+    .news-meta { color: #8b949e; font-size: 0.92rem; margin-bottom: 8px; }
+    .news-body { color: #c9d1d9; font-size: 1rem; line-height: 1.4; }
     .market-window { display: flex; flex-direction: column; height: 100%; font-family: 'Courier New', monospace; }
     .market-top-bar { display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; border-bottom: 1px solid var(--border); background: rgba(0,0,0,0.3); flex-shrink: 0; }
     .market-tabs { display: flex; gap: 0; }
-    .market-tab { padding: 5px 14px; background: transparent; border: 1px solid var(--border); color: var(--text-muted); font-family: inherit; font-size: 0.75rem; letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; transition: all 0.2s; }
+    .market-tab { padding: 5px 14px; background: transparent; border: 1px solid var(--border); color: var(--text-muted); font-family: inherit; font-size: 0.88rem; letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; transition: all 0.2s; }
     .market-tab.active { background: rgba(0,180,220,0.15); color: var(--teal); border-color: var(--teal); }
     .market-tab:hover { color: var(--teal); border-color: var(--border-hi); }
     .market-search-bar { display: flex; align-items: center; gap: 8px; }
-    .market-search-bar input { background: rgba(4,8,14,0.9); border: 1px solid var(--border); color: var(--text-hi); font-family: inherit; font-size: 0.8rem; padding: 5px 10px; width: 200px; border-radius: 2px; outline: none; }
+    .market-search-bar input { background: rgba(4,8,14,0.9); border: 1px solid var(--border); color: var(--text-hi); font-family: inherit; font-size: 0.92rem; padding: 5px 10px; width: 200px; border-radius: 2px; outline: none; }
     .market-search-bar input:focus { border-color: var(--border-hi); }
     .market-actions { display: flex; align-items: center; gap: 8px; }
-    .market-balance { color: var(--teal); font-size: 0.8rem; cursor: pointer; letter-spacing: 0.05em; border: 1px solid var(--border); padding: 4px 10px; border-radius: 2px; }
+    .market-balance { color: var(--teal); font-size: 0.92rem; cursor: pointer; letter-spacing: 0.05em; border: 1px solid var(--border); padding: 4px 10px; border-radius: 2px; }
     .market-balance:hover { border-color: var(--teal); }
-    .market-action-btn { background: transparent; border: 1px solid var(--border); color: var(--text); font-family: inherit; font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase; padding: 5px 12px; cursor: pointer; transition: all 0.2s; border-radius: 2px; }
+    .market-action-btn { background: transparent; border: 1px solid var(--border); color: var(--text); font-family: inherit; font-size: 0.88rem; letter-spacing: 0.08em; text-transform: uppercase; padding: 5px 12px; cursor: pointer; transition: all 0.2s; border-radius: 2px; }
     .market-action-btn:hover { border-color: var(--teal); color: var(--teal); }
     .market-body { display: flex; flex: 1; overflow: hidden; }
     .market-left { width: 220px; flex-shrink: 0; border-right: 1px solid var(--border); overflow-y: auto; background: rgba(0,0,0,0.2); }
     .market-category { border-bottom: 1px solid rgba(0,180,220,0.08); }
-    .market-category-header { padding: 8px 12px; color: var(--text); font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: background 0.2s; user-select: none; }
+    .market-category-header { padding: 8px 12px; color: var(--text); font-size: 0.92rem; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: background 0.2s; user-select: none; }
     .market-category-header:hover { background: rgba(0,180,220,0.06); color: var(--teal); }
     .market-category-header.active { color: var(--teal); }
-    .market-category-arrow { color: var(--text-muted); font-size: 0.7rem; transition: transform 0.2s; }
+    .market-category-arrow { color: var(--text-muted); font-size: 1.05rem; transition: transform 0.2s; }
     .market-category-arrow.open { transform: rotate(90deg); }
     .market-subcategory { display: none; }
     .market-subcategory.open { display: block; }
-    .market-subcat-item { padding: 6px 12px 6px 28px; color: var(--text-muted); font-size: 0.78rem; cursor: pointer; transition: all 0.2s; }
+    .market-subcat-item { padding: 6px 12px 6px 28px; color: var(--text-muted); font-size: 1rem; cursor: pointer; transition: all 0.2s; }
     .market-subcat-item:hover { color: var(--teal); background: rgba(0,180,220,0.05); }
     .market-subcat-item.active { color: var(--teal); background: rgba(0,180,220,0.1); border-left: 2px solid var(--teal); }
     .market-right { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
     .market-item-header { padding: 10px 14px; border-bottom: 1px solid var(--border); background: rgba(0,0,0,0.2); flex-shrink: 0; }
-    .market-breadcrumb { color: var(--text-muted); font-size: 0.72rem; margin-bottom: 4px; }
-    .market-item-name { color: var(--text-hi); font-size: 0.95rem; font-weight: 700; letter-spacing: 0.05em; }
+    .market-breadcrumb { color: var(--text-muted); font-size: 1.05rem; margin-bottom: 4px; }
+    .market-item-name { color: var(--text-hi); font-size: 1.05rem; font-weight: 700; letter-spacing: 0.05em; }
     .market-item-tabs { display: flex; gap: 0; padding: 0 14px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
-    .market-item-tab { padding: 6px 16px; color: var(--text-muted); font-size: 0.75rem; cursor: pointer; border-bottom: 2px solid transparent; text-transform: uppercase; letter-spacing: 0.08em; transition: all 0.2s; }
+    .market-item-tab { padding: 6px 16px; color: var(--text-muted); font-size: 0.88rem; cursor: pointer; border-bottom: 2px solid transparent; text-transform: uppercase; letter-spacing: 0.08em; transition: all 0.2s; }
     .market-item-tab.active { color: var(--teal); border-bottom-color: var(--teal); }
     .market-orders-panel { flex: 1; overflow-y: auto; padding: 10px 14px; }
     .market-orders-section { margin-bottom: 16px; }
-    .market-orders-title { color: var(--text-muted); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 6px; }
-    .market-orders-table { width: 100%; border-collapse: collapse; font-size: 0.78rem; }
-    .market-orders-table th { color: var(--text-muted); text-align: left; padding: 4px 8px; border-bottom: 1px solid var(--border); font-weight: 400; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; cursor: pointer; }
+    .market-orders-title { color: var(--text-muted); font-size: 1.05rem; text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 6px; }
+    .market-orders-table { width: 100%; border-collapse: collapse; font-size: 1rem; }
+    .market-orders-table th { color: var(--text-muted); text-align: left; padding: 4px 8px; border-bottom: 1px solid var(--border); font-weight: 400; font-size: 1.05rem; text-transform: uppercase; letter-spacing: 0.08em; cursor: pointer; }
     .market-orders-table th:hover { color: var(--teal); }
     .market-orders-table td { padding: 5px 8px; border-bottom: 1px solid rgba(0,180,220,0.05); color: var(--text); }
     .market-orders-table tr:hover td { background: rgba(0,180,220,0.04); }
     .market-orders-table .price-sell { color: #e05555; }
     .market-orders-table .price-buy { color: #55aa55; }
     .market-order-actions { display: flex; gap: 8px; padding: 10px 14px; border-top: 1px solid var(--border); flex-shrink: 0; }
-    .market-buy-btn { flex: 1; padding: 8px; background: rgba(0,180,220,0.15); border: 1px solid var(--teal); color: var(--teal); font-family: inherit; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.1em; cursor: pointer; transition: all 0.2s; border-radius: 2px; }
+    .market-buy-btn { flex: 1; padding: 8px; background: rgba(0,180,220,0.15); border: 1px solid var(--teal); color: var(--teal); font-family: inherit; font-size: 1rem; text-transform: uppercase; letter-spacing: 0.1em; cursor: pointer; transition: all 0.2s; border-radius: 2px; }
     .market-buy-btn:hover { background: rgba(0,180,220,0.3); }
-    .market-sell-btn { flex: 1; padding: 8px; background: rgba(232,124,42,0.15); border: 1px solid var(--amber); color: var(--amber); font-family: inherit; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.1em; cursor: pointer; transition: all 0.2s; border-radius: 2px; }
+    .market-sell-btn { flex: 1; padding: 8px; background: rgba(232,124,42,0.15); border: 1px solid var(--amber); color: var(--amber); font-family: inherit; font-size: 1rem; text-transform: uppercase; letter-spacing: 0.1em; cursor: pointer; transition: all 0.2s; border-radius: 2px; }
     .market-sell-btn:hover { background: rgba(232,124,42,0.3); }
     .market-ticker { height: 28px; background: rgba(0,0,0,0.4); border-top: 1px solid var(--border); display: flex; align-items: center; overflow: hidden; flex-shrink: 0; padding: 0 8px; }
-    .market-ticker-inner { white-space: nowrap; animation: market-scroll 40s linear infinite; font-size: 0.72rem; }
+    .market-ticker-inner { white-space: nowrap; animation: market-scroll 40s linear infinite; font-size: 1.05rem; }
     @keyframes market-scroll { from { transform: translateX(100%); } to { transform: translateX(-100%); } }
     .ticker-item { display: inline-block; margin-right: 40px; color: var(--text); }
     .ticker-item .t-name { color: var(--text-muted); margin-right: 6px; }
     .ticker-item .t-price { color: var(--text-hi); margin-right: 4px; }
     .ticker-item .t-up { color: #55aa55; }
     .ticker-item .t-down { color: #e05555; }
-    .market-empty { color: var(--text-muted); font-size: 0.8rem; padding: 20px; text-align: center; }
+    .market-empty { color: var(--text-muted); font-size: 0.92rem; padding: 20px; text-align: center; }
     .market-items-list { padding: 0; }
-    .market-item-row { padding: 7px 14px; border-bottom: 1px solid rgba(0,180,220,0.05); color: var(--text-hi); font-size: 0.8rem; cursor: pointer; transition: background 0.2s; display: flex; justify-content: space-between; align-items: center; }
+    .market-item-row { padding: 7px 14px; border-bottom: 1px solid rgba(0,180,220,0.05); color: var(--text-hi); font-size: 0.92rem; cursor: pointer; transition: background 0.2s; display: flex; justify-content: space-between; align-items: center; }
     .market-item-row:hover { background: rgba(0,180,220,0.06); color: var(--teal); }
     .market-item-row.active { background: rgba(0,180,220,0.1); color: var(--teal); border-left: 2px solid var(--teal); }
-    .market-item-price { color: var(--text-muted); font-size: 0.72rem; }
+    .market-item-price { color: var(--text-muted); font-size: 1.05rem; }
     .ops-sidebar::-webkit-scrollbar { width: 4px; }
     .ops-sidebar::-webkit-scrollbar-track { background: rgba(0,0,0,0.3); }
     .ops-sidebar::-webkit-scrollbar-thumb { background: rgba(0,180,220,0.4); border-radius: 2px; }
@@ -203,7 +203,7 @@
   <div class="hq-header">
   <div style="display: flex; align-items: center; gap: 12px;">
     <button class="hq-dashboard-btn" onclick="openDepartmentWindow()">DASHBOARD</button>
-    <span id="headerUsername" style="color: #58a6ff; font-size: 0.9rem; font-weight: bold; letter-spacing: 1px; text-shadow: 0 0 10px rgba(88,166,255,0.6); border-left: 2px solid rgba(88,166,255,0.4); padding-left: 12px; margin-left: 4px;"></span>
+    <span id="headerUsername" style="color: #58a6ff; font-size: 1rem; font-weight: bold; letter-spacing: 1px; text-shadow: 0 0 10px rgba(88,166,255,0.6); border-left: 2px solid rgba(88,166,255,0.4); padding-left: 12px; margin-left: 4px;"></span>
   </div>
   <div class="hq-title">FREIGHT EMPIRE</div>
   <div class="hq-stats">
