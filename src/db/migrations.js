@@ -208,7 +208,8 @@ console.log('✓ Migration: Added hq_state to companies');
         name VARCHAR(255) NOT NULL,
         description TEXT,
         base_price DECIMAL(15,2) DEFAULT 0,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(category, subcategory, name)
       )
     `);
     console.log('✓ Migration: Created market_items table');
