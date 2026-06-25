@@ -204,7 +204,7 @@ router.post('/create-company', async (req, res) => {
     const decoded = require('jsonwebtoken').verify(token, 'freight-empire-secret-key-change-in-production');
     const ownerId = decoded.playerId;
     
-    const { name, username, hqCity, hqState, hqLatitude, hqLongitude } = req.body;
+    const { name, username, hqCity, hqState, hqLatitude, hqLongitude, hqCounty, hqNeighborhood } = req.body;
     
     if (!name || !username || !ownerId) {
   return res.status(400).json({ error: 'Company name and username are required' });
@@ -225,8 +225,8 @@ const dotNumber = String(Math.floor(Math.random() * 90000000) + 10000000); // 8-
 const mcNumber = String(Math.floor(Math.random() * 9000000) + 1000000); // 7-digit number
 
 const companyResult = await pool.query(
-     'INSERT INTO companies (name, dot_number, mc_number, owner_id, cash, hq_state, hq_city, hq_latitude, hq_longitude) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *',
-     [name, dotNumber, mcNumber, ownerId, 500000, hqState, hqCity, hqLatitude, hqLongitude]
+     'INSERT INTO companies (name, dot_number, mc_number, owner_id, cash, hq_state, hq_city, hq_latitude, hq_longitude, hq_county, hq_neighborhood) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING *',
+     [name, dotNumber, mcNumber, ownerId, 500000, hqState, hqCity, hqLatitude, hqLongitude, hqCounty, hqNeighborhood]
    );
     
     const company = companyResult.rows[0];
@@ -403,13 +403,19 @@ router.get('/search-cities', async (req, res) => {
       .map(feature => {
         const context = feature.context || [];
         const regionContext = context.find(c => c.id && c.id.startsWith('region'));
+        const districtContext = context.find(c => c.id && c.id.startsWith('neighborhood'));
+        const countyContext = context.find(c => c.id && c.id.startsWith('district'));
         const stateAbbr = regionContext ? regionContext.short_code?.replace('US-', '') : null;
+        const cityName = feature.text || '';
         return {
           name: feature.place_name,
+          city: cityName,
           latitude: feature.geometry.coordinates[1],
           longitude: feature.geometry.coordinates[0],
           id: feature.id,
-          state: stateAbbr
+          state: stateAbbr,
+          county: countyContext ? countyContext.text : null,
+          neighborhood: districtContext ? districtContext.text : null
         };
       })
       .slice(0, 10);

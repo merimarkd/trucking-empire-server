@@ -1225,12 +1225,16 @@ function updateLocationOverlay() {
   const region = stateRegions[state] || '—';
   document.getElementById('locPrimary').innerHTML = `${city} <span>&#9679;</span> ${stateName} <span>&#9679;</span> ${region}`;
   document.getElementById('locSecondary').textContent = `${region} Region — United States`;
-  document.getElementById('locDetail').innerHTML = `
-    <div class="loc-detail-row"><span class="loc-detail-label">City</span><span class="loc-detail-value">${city}</span></div>
-    <div class="loc-detail-row"><span class="loc-detail-label">State</span><span class="loc-detail-value">${stateName}</span></div>
-    <div class="loc-detail-row"><span class="loc-detail-label">Region</span><span class="loc-detail-value">${region}</span></div>
-    <div class="loc-detail-row"><span class="loc-detail-label">Country</span><span class="loc-detail-value">United States</span></div>
-  `;
+  const neighborhood = companyData.hq_neighborhood || null;
+  const county = companyData.hq_county || null;
+  let detailRows = '';
+  if (neighborhood) detailRows += `<div class="loc-detail-row"><span class="loc-detail-label">District</span><span class="loc-detail-value">${neighborhood}</span></div>`;
+  detailRows += `<div class="loc-detail-row"><span class="loc-detail-label">City</span><span class="loc-detail-value">${city}</span></div>`;
+  if (county) detailRows += `<div class="loc-detail-row"><span class="loc-detail-label">County</span><span class="loc-detail-value">${county}</span></div>`;
+  detailRows += `<div class="loc-detail-row"><span class="loc-detail-label">State</span><span class="loc-detail-value">${stateName}</span></div>`;
+  detailRows += `<div class="loc-detail-row"><span class="loc-detail-label">Region</span><span class="loc-detail-value">${region}</span></div>`;
+  detailRows += `<div class="loc-detail-row"><span class="loc-detail-label">Country</span><span class="loc-detail-value">United States</span></div>`;
+  document.getElementById('locDetail').innerHTML = detailRows;
 }
 
 function toggleLocSearch() {
