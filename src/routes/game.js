@@ -489,7 +489,7 @@ router.get('/industrial-zones', async (req, res) => {
       'CT':{s:40.95,n:42.05,w:-73.73,e:-71.79},'DE':{s:38.45,n:39.84,w:-75.79,e:-75.05},
       'FL':{s:24.52,n:31.00,w:-87.63,e:-80.03},'GA':{s:30.36,n:35.00,w:-85.61,e:-80.84},
       'HI':{s:18.91,n:22.24,w:-160.25,e:-154.81},'ID':{s:41.99,n:49.00,w:-117.24,e:-111.04},
-      'IL':{s:36.97,n:42.51,w:-91.51,e:-87.52},'IN':{s:37.77,n:41.76,w:-88.10,e:-84.78},
+      'IL':{s:36.97,n:42.51,w:-91.51,e:-87.55},'IN':{s:37.77,n:41.76,w:-88.10,e:-84.78},
       'IA':{s:40.38,n:43.50,w:-96.64,e:-90.14},'KS':{s:36.99,n:40.00,w:-102.05,e:-94.59},
       'KY':{s:36.50,n:39.15,w:-89.57,e:-81.96},'LA':{s:28.93,n:33.02,w:-94.04,e:-88.82},
       'ME':{s:43.06,n:47.46,w:-71.08,e:-66.95},'MD':{s:37.91,n:39.72,w:-79.49,e:-75.05},
@@ -541,7 +541,7 @@ router.get('/industrial-zones', async (req, res) => {
       return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
     };
     const bounds = state ? stateBounds[state] : null;
-    const zones = (data.elements || [])
+    const rawZones = (data.elements || [])
       .filter(e => e.center || (e.lat && e.lon))
       .map(e => ({
         lat: e.center ? e.center.lat : e.lat,
@@ -553,8 +553,33 @@ router.get('/industrial-zones', async (req, res) => {
           if (z.lat < bounds.s || z.lat > bounds.n || z.lng < bounds.w || z.lng > bounds.e) return false;
         }
         return true;
-      })
-      .filter(z => !occupied.some(c => haversine(c.lat, c.lng, z.lat, z.lng) < 150));
+      });
+
+    // Cluster zones within 800m of each other into single markers
+    const clustered = [];
+    const used = new Set();
+    rawZones.forEach((zone, i) => {
+      if (used.has(i)) return;
+      const cluster = [zone];
+      used.add(i);
+      rawZones.forEach((other, j) => {
+        if (used.has(j)) return;
+        if (haversine(zone.lat, zone.lng, other.lat, other.lng) < 800) {
+          cluster.push(other);
+          used.add(j);
+        }
+      });
+      const avgLat = cluster.reduce((s,z) => s + z.lat, 0) / cluster.length;
+      const avgLng = cluster.reduce((s,z) => s + z.lng, 0) / cluster.length;
+      const namedZone = cluster.find(z => z.name);
+      clustered.push({
+        lat: avgLat,
+        lng: avgLng,
+        name: namedZone ? namedZone.name : 'Industrial Zone ' + (clustered.length + 1)
+      });
+    });
+
+    const zones = clustered.filter(z => !occupied.some(c => haversine(c.lat, c.lng, z.lat, z.lng) < 150));
     res.json({ zones });
   } catch (error) {
     console.error('Industrial zones error:', error.message);
