@@ -485,7 +485,7 @@ router.get('/industrial-zones', async (req, res) => {
     const north = parseFloat(lat) + delta;
     const west = parseFloat(lng) - delta;
     const east = parseFloat(lng) + delta;
-    const query = `[out:json][timeout:25];(way["landuse"="industrial"](${south},${west},${north},${east});way["landuse"="warehouse"](${south},${west},${north},${east});way["landuse"="logistics"](${south},${west},${north},${east});way["landuse"="commercial"](${south},${west},${north},${east});way["building"="warehouse"](${south},${west},${north},${east});way["building"="industrial"](${south},${west},${north},${east});way["building"="logistics"](${south},${west},${north},${east});node["aeroway"="aerodrome"](${south},${west},${north},${east});way["landuse"="aeroway"](${south},${west},${north},${east});node["freight"="yes"](${south},${west},${north},${east});node["office"="logistics"](${south},${west},${north},${east}););out center 30;`;
+    const query = `[out:json][timeout:25];(way["landuse"="industrial"](${south},${west},${north},${east});way["landuse"="warehouse"](${south},${west},${north},${east});way["building"="warehouse"](${south},${west},${north},${east}););out center 30;`;
     const https = require('https');
     const options = {
       hostname: 'overpass-api.de',
@@ -514,12 +514,12 @@ router.get('/industrial-zones', async (req, res) => {
       return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
     };
     const zones = (data.elements || [])
-      .filter(e => e.center)
+      .filter(e => e.center || (e.lat && e.lon))
       .map(e => ({
-        lat: e.center.lat,
-        lng: e.center.lon,
+        lat: e.center ? e.center.lat : e.lat,
+        lng: e.center ? e.center.lon : e.lon,
         name: e.tags && e.tags.name ? e.tags.name : null,
-        available: !occupied.some(c => haversine(c.lat, c.lng, e.center.lat, e.center.lon) < 150)
+        available: !occupied.some(c => haversine(c.lat, c.lng, e.center ? e.center.lat : e.lat, e.center ? e.center.lon : e.lon) < 150)
       }))
       .filter(z => z.available)
       .slice(0, 20);
