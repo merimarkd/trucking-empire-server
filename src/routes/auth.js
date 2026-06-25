@@ -386,8 +386,7 @@ router.get('/search-cities', async (req, res) => {
     }
 
     const query = encodeURIComponent(`${q}, USA`);
-    const stateFilter = state ? `&stacks=places&region=${state}` : '';
-    const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${query}.json?access_token=${mapboxKey}&country=us&limit=10${stateFilter}`;
+    const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${query}.json?access_token=${mapboxKey}&country=us&limit=10`;
 
     const response = await fetch(url);
     const data = await response.json();
@@ -399,7 +398,14 @@ router.get('/search-cities', async (req, res) => {
     const cities = data.features
       .filter(feature => {
         const types = feature.place_type || [];
-        return types.includes('place');
+        if (!types.includes('place')) return false;
+        if (state) {
+          const context = feature.context || [];
+          const regionCtx = context.find(c => c.id && c.id.startsWith('region'));
+          const featureState = regionCtx ? regionCtx.short_code?.replace('US-', '') : null;
+          if (featureState && featureState !== state) return false;
+        }
+        return true;
       })
       .map(feature => {
         const context = feature.context || [];

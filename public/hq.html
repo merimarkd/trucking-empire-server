@@ -1359,13 +1359,27 @@ async function loadMapCompanies() {
       if (isNaN(lat) || isNaN(lng)) return;
       const isMyCompany = companyData && company.id === companyData.id;
       const el = document.createElement('div');
-      el.style.cssText = `
-        width: 14px; height: 14px; border-radius: 50%;
-        background: ${isMyCompany ? '#00b4dc' : '#e87c2a'};
-        border: 2px solid ${isMyCompany ? '#fff' : 'rgba(232,124,42,0.5)'};
-        box-shadow: 0 0 ${isMyCompany ? '10px #00b4dc' : '6px rgba(232,124,42,0.6)'};
-        cursor: pointer;
-      `;
+      if (isMyCompany) {
+        el.style.cssText = `
+          width: 22px; height: 22px;
+          background: transparent;
+          color: #00b4dc;
+          font-size: 20px;
+          line-height: 1;
+          cursor: pointer;
+          text-shadow: 0 0 8px #00b4dc;
+          display: flex; align-items: center; justify-content: center;
+        `;
+        el.textContent = '★';
+      } else {
+        el.style.cssText = `
+          width: 14px; height: 14px; border-radius: 50%;
+          background: #e87c2a;
+          border: 2px solid rgba(232,124,42,0.5);
+          box-shadow: 0 0 6px rgba(232,124,42,0.6);
+          cursor: pointer;
+        `;
+      }
       const popup = new mapboxgl.Popup({ offset: 15, closeButton: false })
         .setHTML(`
           <div class="map-company-popup" style="font-family:'Courier New',monospace;">

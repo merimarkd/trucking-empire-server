@@ -329,7 +329,7 @@ router.get('/hq/:companyId', async (req, res) => {
     const { companyId } = req.params;
     
     const companyRes = await pool.query(
-      'SELECT c.id, c.name, c.hq_state, c.hq_city, c.hq_latitude, c.hq_longitude, c.hq_county, c.hq_neighborhood, p.username FROM companies c LEFT JOIN players p ON c.owner_id = p.id WHERE c.id = $1',
+      'SELECT c.id, c.name, c.hq_state, c.hq_city, c.hq_latitude, c.hq_longitude, c.hq_county, c.hq_neighborhood, c.location_latitude, c.location_longitude, p.username FROM companies c LEFT JOIN players p ON c.owner_id = p.id WHERE c.id = $1',
       [companyId]
     );
     
