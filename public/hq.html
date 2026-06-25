@@ -217,10 +217,17 @@
     .num-input-btn { width: 26px; background: rgba(0,180,220,0.1); border: none; border-left: 1px solid rgba(0,180,220,0.2); color: var(--teal); font-size: 1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.2s; font-family: inherit; }
     .num-input-btn:hover { background: rgba(0,180,220,0.25); }
     .num-input-btn:last-child { border-radius: 0 2px 2px 0; }
+    #minimized-taskbar { position: fixed; bottom: 0; left: 350px; right: 350px; height: 36px; display: flex; align-items: center; gap: 2px; z-index: 8000; pointer-events: none; }
+    .taskbar-item { height: 32px; background: rgba(8,12,18,0.95); border: 1px solid var(--border); color: var(--teal); font-size: 0.75rem; letter-spacing: 0.06em; display: flex; align-items: center; justify-content: space-between; padding: 0 8px; cursor: pointer; pointer-events: all; overflow: hidden; white-space: nowrap; flex-shrink: 0; transition: background 0.2s; gap: 6px; }
+    .taskbar-item:hover { background: rgba(0,180,220,0.15); }
+    .taskbar-item-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
+    .taskbar-item-close { color: #f85149; font-size: 0.7rem; cursor: pointer; padding: 2px 4px; flex-shrink: 0; }
+    .taskbar-item-close:hover { color: #ff6b6b; }
 </style>
 <script src="/socket.io/socket.io.js"></script>
 </head>
 <body>
+<div id="minimized-taskbar"></div>
 <div class="hq-container">
   <div class="hq-header">
   <div style="display: flex; align-items: center; gap: 12px;">
@@ -1025,8 +1032,62 @@ function createWindowHeader(title, element) {
 }
 
 function toggleMinimize(win) {
-  win.classList.toggle('win-minimized');
+  const isMinimized = win.classList.contains('win-minimized');
+  if (isMinimized) {
+    restoreWindow(win);
+  } else {
+    minimizeWindow(win);
+  }
 }
+
+function minimizeWindow(win) {
+  const taskbar = document.getElementById('minimized-taskbar');
+  const current = taskbar.querySelectorAll('.taskbar-item').length;
+  if (current >= 15) {
+    showGameWindow('Maximum Reached', 'You have reached the maximum of 15 minimized windows. Please restore or close a window before minimizing another.', 'error');
+    return;
+  }
+  win.classList.add('win-minimized');
+  win.dataset.preMinLeft = win.style.left;
+  win.dataset.preMinTop = win.style.top;
+  win.style.left = '-9999px';
+  win.style.top = '-9999px';
+  const title = win.querySelector('.window-header span') ? win.querySelector('.window-header span').textContent : win.id;
+  const item = document.createElement('div');
+  item.className = 'taskbar-item';
+  item.dataset.winId = win.id;
+  item.innerHTML = `<span class="taskbar-item-title">${title}</span><span class="taskbar-item-close" onclick="event.stopPropagation();closeFromTaskbar('${win.id}')">X</span>`;
+  item.addEventListener('click', () => restoreWindow(win));
+  taskbar.appendChild(item);
+  recalcTaskbarWidths();
+}
+
+function restoreWindow(win) {
+  win.classList.remove('win-minimized');
+  win.style.left = win.dataset.preMinLeft || '757px';
+  win.style.top = win.dataset.preMinTop || '92px';
+  const taskbar = document.getElementById('minimized-taskbar');
+  const item = taskbar.querySelector(`[data-win-id="${win.id}"]`);
+  if (item) item.remove();
+  recalcTaskbarWidths();
+}
+
+function closeFromTaskbar(winId) {
+  const win = document.getElementById(winId);
+  if (win) win.remove();
+  const taskbar = document.getElementById('minimized-taskbar');
+  const item = taskbar.querySelector(`[data-win-id="${winId}"]`);
+  if (item) item.remove();
+  recalcTaskbarWidths();
+}
+
+function recalcTaskbarWidths() {
+  const taskbar = document.getElementById('minimized-taskbar');
+  const items = taskbar.querySelectorAll('.taskbar-item');
+  if (items.length === 0) return;
+  const totalWidth = taskbar.offsetWidth;
+  const itemWidth = Math.floor((totalWidth - (items.length * 2)) / items.length);
+  items.forEach(item => item.style.width = itemWidth + 'px');
 
 function showWindowMenu(e, win) {
   e.stopPropagation();
