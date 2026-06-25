@@ -278,6 +278,8 @@
     .custom-select-dropdown::-webkit-scrollbar { width: 4px; }
     .custom-select-dropdown::-webkit-scrollbar-track { background: rgba(0,0,0,0.3); }
     .custom-select-dropdown::-webkit-scrollbar-thumb { background: rgba(0,180,220,0.4); border-radius: 2px; }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+    .loading-blink { animation: blink 1s ease-in-out infinite; color: var(--teal); }
     #company-minimap { width: 100%; height: 300px; border: 1px solid var(--border); border-radius: 2px; margin-top: 8px; position: relative; }
     .zone-marker { width: 20px; height: 20px; border-radius: 50%; background: rgba(0,180,220,0.3); border: 2px solid var(--teal); cursor: pointer; transition: all 0.2s; }
     .zone-marker:hover { background: rgba(0,180,220,0.6); transform: scale(1.3); }
@@ -749,7 +751,7 @@
 
   async function loadIndustrialZones(lat, lng, cityName) {
     document.getElementById('zoneSection').style.display = 'block';
-    document.getElementById('zoneStatus').textContent = 'Loading industrial zones...';
+    document.getElementById('zoneStatus').innerHTML = '<span class="loading-blink">Loading industrial zones...</span>';
     zoneMarkers.forEach(m => m && m.remove());
     zoneMarkers = [];
     selectedZone = null;
