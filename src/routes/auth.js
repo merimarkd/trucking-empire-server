@@ -225,8 +225,8 @@ const dotNumber = String(Math.floor(Math.random() * 90000000) + 10000000); // 8-
 const mcNumber = String(Math.floor(Math.random() * 9000000) + 1000000); // 7-digit number
 
 const companyResult = await pool.query(
-     'INSERT INTO companies (name, dot_number, mc_number, owner_id, cash, hq_state) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
-     [name, dotNumber, mcNumber, ownerId, 500000, hqState]
+     'INSERT INTO companies (name, dot_number, mc_number, owner_id, cash, hq_state, hq_city, hq_latitude, hq_longitude) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *',
+     [name, dotNumber, mcNumber, ownerId, 500000, hqState, hqCity, hqLatitude, hqLongitude]
    );
     
     const company = companyResult.rows[0];
