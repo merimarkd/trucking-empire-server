@@ -645,7 +645,7 @@ async function sendToAuction(companyId) {
 }
 
 async function deleteCompany(companyId) {
-  showConfirmWindow('Delete Company', 'Delete this company and put it up for auction at 50% value?', async () => {
+  showConfirmWindow('Delete Company', 'Permanently delete this company and all associated data? This cannot be undone.', async () => {
     try {
       const res = await fetch(API + '/api/game/admin/delete-company', {
         method: 'POST',
@@ -653,7 +653,7 @@ async function deleteCompany(companyId) {
         body: JSON.stringify({ companyId })
       });
       if (res.ok) {
-        showGameWindow('Success', 'Company deleted and put up for auction.');
+        showGameWindow('Success', 'Company permanently deleted.');
         loadCompanies();
       } else {
         showGameWindow('Error', 'Failed to delete company.');

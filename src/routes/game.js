@@ -415,7 +415,10 @@ router.delete('/company/:companyId', async (req, res) => {
     // Clear player's current company first
     await pool.query('UPDATE players SET current_company_id = NULL WHERE current_company_id = $1', [companyId]);
     await pool.query('DELETE FROM market_orders WHERE company_id = $1', [companyId]);
+    await pool.query('DELETE FROM loan_payments WHERE company_id = $1', [companyId]);
     await pool.query('DELETE FROM loans WHERE company_id = $1', [companyId]);
+    await pool.query('DELETE FROM transactions WHERE company_id = $1', [companyId]);
+    await pool.query('DELETE FROM compliance_strikes WHERE company_id = $1', [companyId]);
     await pool.query('DELETE FROM drivers WHERE company_id = $1', [companyId]);
     await pool.query('UPDATE companies SET owner_id = NULL WHERE id = $1', [companyId]);
     await pool.query('DELETE FROM companies WHERE id = $1', [companyId]);
