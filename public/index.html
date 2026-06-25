@@ -534,6 +534,7 @@
   name: name,
   username: document.getElementById("companyUsername").value.trim(),
   hqCity: selectedLocation.city || selectedLocation.name,
+  hqState: selectedLocation.state || null,
   hqLatitude: selectedLocation.latitude,
   hqLongitude: selectedLocation.longitude,
   hqCounty: selectedLocation.county || null,
@@ -571,13 +572,13 @@
         const res = await fetch(API + "/api/auth/search-cities?q=" + encodeURIComponent(q));
         const data = await res.json();
         if (!data.cities || data.cities.length === 0) { results.innerHTML = "<div class=\"search-item\">No results</div>"; return; }
-        results.innerHTML = data.cities.map(c => "<div class=\"search-item\" onclick=\"selectLocation(this, '" + c.name.replace(/'/g,"\\'" ) + "', " + c.latitude + ", " + c.longitude + ", '" + (c.county||'').replace(/'/g,"\\'") + "', '" + (c.neighborhood||'').replace(/'/g,"\\'") + "', '" + (c.city||'').replace(/'/g,"\\'") + "')\">" + c.name + "</div>").join("");
+        results.innerHTML = data.cities.map(c => "<div class=\"search-item\" onclick=\"selectLocation(this, '" + c.name.replace(/'/g,"\\'" ) + "', " + c.latitude + ", " + c.longitude + ", '" + (c.county||'').replace(/'/g,"\\'") + "', '" + (c.neighborhood||'').replace(/'/g,"\\'") + "', '" + (c.city||'').replace(/'/g,"\\'") + "', '" + (c.state||'').replace(/'/g,"\\'") + "')\">" + c.name + "</div>").join("");
       } catch (e) { results.innerHTML = "<div class=\"search-item\">Error</div>"; }
     }, 300);
   });
 
-  function selectLocation(el, name, lat, lng, county, neighborhood, city) {
-    selectedLocation = { name: name, latitude: lat, longitude: lng, county: county, neighborhood: neighborhood, city: city };
+  function selectLocation(el, name, lat, lng, county, neighborhood, city, state) {
+    selectedLocation = { name: name, latitude: lat, longitude: lng, county: county, neighborhood: neighborhood, city: city, state: state };
     document.getElementById("hqSearch").value = name;
     document.getElementById("searchResults").classList.remove("active");
     document.getElementById("locationName").textContent = name;
