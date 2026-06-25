@@ -232,11 +232,46 @@
     .taskbar-item-close:hover { color: #ff6b6b; }
     .ticker-text:hover { animation-play-state: paused; }
     .market-ticker-inner:hover { animation-play-state: paused; }
+    #location-overlay { position: fixed; top: 80px; left: 365px; z-index: 1500; pointer-events: none; }
+    #location-overlay.hidden { display: none; }
+    .loc-controls { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; pointer-events: all; }
+    .loc-icon-btn { background: transparent; border: none; color: var(--teal); cursor: pointer; font-size: 1.1rem; padding: 2px 4px; opacity: 0.7; transition: opacity 0.2s; position: relative; }
+    .loc-icon-btn:hover { opacity: 1; }
+    .loc-tooltip { position: absolute; left: 50%; transform: translateX(-50%); top: 26px; background: rgba(8,12,18,0.95); border: 1px solid var(--border); color: var(--text); font-size: 0.82rem; padding: 3px 8px; white-space: nowrap; pointer-events: none; opacity: 0; transition: opacity 0.2s; border-radius: 2px; }
+    .loc-icon-btn:hover .loc-tooltip { opacity: 1; }
+    #loc-search-bar { display: none; background: rgba(4,8,14,0.95); border: 1px solid var(--border-hi); color: var(--text-hi); font-family: inherit; font-size: 0.9rem; padding: 5px 12px; width: 280px; border-radius: 2px; outline: none; }
+    #loc-search-bar.active { display: block; }
+    .loc-main { line-height: 1.3; }
+    .loc-primary { color: var(--text-hi); font-size: 1.4rem; font-weight: 700; letter-spacing: 0.06em; text-shadow: 0 0 12px rgba(0,180,220,0.4); }
+    .loc-primary span { color: var(--teal); }
+    .loc-secondary { color: var(--text-muted); font-size: 0.88rem; margin-top: 4px; letter-spacing: 0.04em; }
+    .loc-detail { margin-top: 8px; }
+    .loc-detail-row { display: flex; gap: 6px; color: var(--text-muted); font-size: 0.82rem; line-height: 1.6; }
+    .loc-detail-label { color: var(--text-muted); min-width: 80px; }
+    .loc-detail-value { color: var(--text); }
 </style>
 <script src="/socket.io/socket.io.js"></script>
 </head>
 <body>
 <div id="minimized-taskbar"></div>
+<div id="location-overlay">
+  <div class="loc-controls">
+    <button class="loc-icon-btn" onclick="toggleLocSearch()">
+      &#128269;
+      <span class="loc-tooltip">Search Nationwide</span>
+    </button>
+    <input type="text" id="loc-search-bar" placeholder="Search cities, states, businesses..." autocomplete="off">
+    <button class="loc-icon-btn" onclick="toggleLocInfo()">
+      &#9678;
+      <span class="loc-tooltip">Location Info</span>
+    </button>
+  </div>
+  <div class="loc-main" id="locMainInfo">
+    <div class="loc-primary" id="locPrimary">— <span>—</span> —</div>
+    <div class="loc-secondary" id="locSecondary">Loading location...</div>
+    <div class="loc-detail" id="locDetail"></div>
+  </div>
+</div>
 <div class="hq-container">
   <div class="hq-header">
   <div style="display: flex; align-items: center; gap: 12px;">
@@ -369,6 +404,7 @@ async function loadHQData() {
     }
     companyData = await companyRes.json();
     document.getElementById('headerUsername').textContent = player.username || '';
+    updateLocationOverlay();
     initSocket(player.id);
     setupHotspots();
     // createParticleNetwork(); // Disabled - using video background instead
@@ -1167,6 +1203,45 @@ function toggleLightBg(item, e) {
   win.dataset.lightBg = !lightBg;
   win.style.background = !lightBg ? 'rgba(40,50,60,0.97)' : '';
   menu.remove();
+}
+
+// US State to Region mapping
+const stateRegions = {
+  'ME':'Northeast','NH':'Northeast','VT':'Northeast','MA':'Northeast','RI':'Northeast','CT':'Northeast','NY':'Northeast','NJ':'Northeast','PA':'Northeast',
+  'OH':'Midwest','MI':'Midwest','IN':'Midwest','IL':'Midwest','WI':'Midwest','MN':'Midwest','IA':'Midwest','MO':'Midwest','ND':'Midwest','SD':'Midwest','NE':'Midwest','KS':'Midwest',
+  'DE':'South','MD':'South','DC':'South','VA':'South','WV':'South','NC':'South','SC':'South','GA':'South','FL':'South','KY':'South','TN':'South','AL':'South','MS':'South','AR':'South','LA':'South','OK':'South','TX':'South',
+  'MT':'West','ID':'West','WY':'West','CO':'West','NM':'West','AZ':'West','UT':'West','NV':'West','WA':'West','OR':'West','CA':'West','AK':'West','HI':'West'
+};
+
+const stateNames = {
+  'AL':'Alabama','AK':'Alaska','AZ':'Arizona','AR':'Arkansas','CA':'California','CO':'Colorado','CT':'Connecticut','DE':'Delaware','FL':'Florida','GA':'Georgia','HI':'Hawaii','ID':'Idaho','IL':'Illinois','IN':'Indiana','IA':'Iowa','KS':'Kansas','KY':'Kentucky','LA':'Louisiana','ME':'Maine','MD':'Maryland','MA':'Massachusetts','MI':'Michigan','MN':'Minnesota','MS':'Mississippi','MO':'Missouri','MT':'Montana','NE':'Nebraska','NV':'Nevada','NH':'New Hampshire','NJ':'New Jersey','NM':'New Mexico','NY':'New York','NC':'North Carolina','ND':'North Dakota','OH':'Ohio','OK':'Oklahoma','OR':'Oregon','PA':'Pennsylvania','RI':'Rhode Island','SC':'South Carolina','SD':'South Dakota','TN':'Tennessee','TX':'Texas','UT':'Utah','VT':'Vermont','VA':'Virginia','WA':'Washington','WV':'West Virginia','WI':'Wisconsin','WY':'Wyoming','DC':'District of Columbia'
+};
+
+function updateLocationOverlay() {
+  if (!companyData) return;
+  const city = companyData.hq_city || '—';
+  const state = companyData.hq_state || '—';
+  const stateName = stateNames[state] || state;
+  const region = stateRegions[state] || '—';
+  document.getElementById('locPrimary').innerHTML = `${city} <span>&#9679;</span> ${stateName} <span>&#9679;</span> ${region}`;
+  document.getElementById('locSecondary').textContent = `${region} Region — United States`;
+  document.getElementById('locDetail').innerHTML = `
+    <div class="loc-detail-row"><span class="loc-detail-label">City</span><span class="loc-detail-value">${city}</span></div>
+    <div class="loc-detail-row"><span class="loc-detail-label">State</span><span class="loc-detail-value">${stateName}</span></div>
+    <div class="loc-detail-row"><span class="loc-detail-label">Region</span><span class="loc-detail-value">${region}</span></div>
+    <div class="loc-detail-row"><span class="loc-detail-label">Country</span><span class="loc-detail-value">United States</span></div>
+  `;
+}
+
+function toggleLocSearch() {
+  const bar = document.getElementById('loc-search-bar');
+  bar.classList.toggle('active');
+  if (bar.classList.contains('active')) bar.focus();
+}
+
+function toggleLocInfo() {
+  const info = document.getElementById('locMainInfo');
+  info.style.display = info.style.display === 'none' ? '' : 'none';
 }
 
 function showTooltip(event, text) {
