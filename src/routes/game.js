@@ -485,7 +485,7 @@ router.get('/industrial-zones', async (req, res) => {
     const north = parseFloat(lat) + delta;
     const west = parseFloat(lng) - delta;
     const east = parseFloat(lng) + delta;
-    const query = `[out:json][timeout:25];(way["landuse"="industrial"](${south},${west},${north},${east});way["landuse"="warehouse"](${south},${west},${north},${east});way["landuse"="logistics"](${south},${west},${north},${east});way["building"="warehouse"](${south},${west},${north},${east});way["building"="industrial"](${south},${west},${north},${east});node["industrial"="port"](${south},${west},${north},${east});node["amenity"="trucking"](${south},${west},${north},${east}););out center 30;`;
+    const query = `[out:json][timeout:25];(way["landuse"="industrial"](${south},${west},${north},${east});way["landuse"="warehouse"](${south},${west},${north},${east});way["landuse"="logistics"](${south},${west},${north},${east});way["landuse"="commercial"](${south},${west},${north},${east});way["building"="warehouse"](${south},${west},${north},${east});way["building"="industrial"](${south},${west},${north},${east});way["building"="logistics"](${south},${west},${north},${east});node["aeroway"="aerodrome"](${south},${west},${north},${east});way["landuse"="aeroway"](${south},${west},${north},${east});node["freight"="yes"](${south},${west},${north},${east});node["office"="logistics"](${south},${west},${north},${east}););out center 30;`;
     const https = require('https');
     const options = {
       hostname: 'overpass-api.de',
