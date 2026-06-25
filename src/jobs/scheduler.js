@@ -9,6 +9,7 @@ const {
   processGarnishment,
   checkCompliance
 } = require('../banking/ticks');
+const { updateFuelPrices } = require('./fuelPrices');
 
 function initializeScheduler() {
   console.log('🔄 Initializing tick scheduler...');
@@ -32,6 +33,10 @@ function initializeScheduler() {
   // TICK 5: Compliance checks - Daily at 02:00 UTC
   cron.schedule('0 2 * * *', checkCompliance, { name: 'checkCompliance' });
   console.log('  ✓ Compliance checks: Daily 02:00 UTC');
+
+  // TICK 6: Fuel prices - Daily at 06:00 UTC
+  cron.schedule('0 6 * * *', updateFuelPrices, { name: 'updateFuelPrices' });
+  console.log('  ✓ Fuel prices: Daily 06:00 UTC');
 
   // Auto-delete inactive players (30+ days no login)
 cron.schedule('0 3 * * *', async () => {
@@ -85,6 +90,8 @@ cron.schedule('0 4 * * *', async () => {
   }
 });
 
+// Run fuel prices immediately on startup
+  updateFuelPrices();
   console.log('✅ Tick scheduler initialized');
 }
 
