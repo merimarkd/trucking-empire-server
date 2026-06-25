@@ -478,14 +478,41 @@ router.post('/admin/auction-company', async (req, res) => {
 // GET /api/game/industrial-zones - find industrial zones near coordinates
 router.get('/industrial-zones', async (req, res) => {
   try {
-    const { lat, lng } = req.query;
+    const { lat, lng, state } = req.query;
     if (!lat || !lng) return res.status(400).json({ error: 'lat and lng required' });
-    const delta = 0.5;
-    const south = parseFloat(lat) - delta;
-    const north = parseFloat(lat) + delta;
-    const west = parseFloat(lng) - delta;
-    const east = parseFloat(lng) + delta;
-    const query = `[out:json][timeout:25];(way["landuse"="industrial"](${south},${west},${north},${east});way["landuse"="warehouse"](${south},${west},${north},${east});way["building"="warehouse"](${south},${west},${north},${east}););out center 100;`;
+
+    // State bounding boxes for filtering
+    const stateBounds = {
+      'AL':{s:30.14,n:35.01,w:-88.47,e:-84.89},'AK':{s:54.77,n:71.35,w:-168.00,e:-129.99},
+      'AZ':{s:31.33,n:37.00,w:-114.82,e:-109.04},'AR':{s:33.00,n:36.50,w:-94.62,e:-89.64},
+      'CA':{s:32.53,n:42.01,w:-124.41,e:-114.13},'CO':{s:36.99,n:41.00,w:-109.06,e:-102.04},
+      'CT':{s:40.95,n:42.05,w:-73.73,e:-71.79},'DE':{s:38.45,n:39.84,w:-75.79,e:-75.05},
+      'FL':{s:24.52,n:31.00,w:-87.63,e:-80.03},'GA':{s:30.36,n:35.00,w:-85.61,e:-80.84},
+      'HI':{s:18.91,n:22.24,w:-160.25,e:-154.81},'ID':{s:41.99,n:49.00,w:-117.24,e:-111.04},
+      'IL':{s:36.97,n:42.51,w:-91.51,e:-87.49},'IN':{s:37.77,n:41.76,w:-88.10,e:-84.78},
+      'IA':{s:40.38,n:43.50,w:-96.64,e:-90.14},'KS':{s:36.99,n:40.00,w:-102.05,e:-94.59},
+      'KY':{s:36.50,n:39.15,w:-89.57,e:-81.96},'LA':{s:28.93,n:33.02,w:-94.04,e:-88.82},
+      'ME':{s:43.06,n:47.46,w:-71.08,e:-66.95},'MD':{s:37.91,n:39.72,w:-79.49,e:-75.05},
+      'MA':{s:41.24,n:42.89,w:-73.51,e:-69.93},'MI':{s:41.70,n:48.31,w:-90.42,e:-82.41},
+      'MN':{s:43.50,n:49.38,w:-97.24,e:-89.49},'MS':{s:30.17,n:35.01,w:-91.65,e:-88.10},
+      'MO':{s:35.99,n:40.61,w:-95.77,e:-89.10},'MT':{s:44.36,n:49.00,w:-116.05,e:-104.04},
+      'NE':{s:39.99,n:43.00,w:-104.05,e:-95.31},'NV':{s:35.00,n:42.00,w:-120.00,e:-114.04},
+      'NH':{s:42.70,n:45.31,w:-72.56,e:-70.61},'NJ':{s:38.93,n:41.36,w:-75.56,e:-73.89},
+      'NM':{s:31.33,n:37.00,w:-109.05,e:-103.00},'NY':{s:40.50,n:45.01,w:-79.76,e:-71.86},
+      'NC':{s:33.84,n:36.59,w:-84.32,e:-75.46},'ND':{s:45.94,n:49.00,w:-104.05,e:-96.55},
+      'OH':{s:38.40,n:41.98,w:-84.82,e:-80.52},'OK':{s:33.62,n:37.00,w:-103.00,e:-94.43},
+      'OR':{s:41.99,n:46.24,w:-124.57,e:-116.46},'PA':{s:39.72,n:42.27,w:-80.52,e:-74.69},
+      'RI':{s:41.15,n:42.02,w:-71.91,e:-71.12},'SC':{s:32.05,n:35.22,w:-83.35,e:-78.54},
+      'SD':{s:42.48,n:45.95,w:-104.06,e:-96.44},'TN':{s:34.98,n:36.68,w:-90.31,e:-81.65},
+      'TX':{s:25.84,n:36.50,w:-106.65,e:-93.51},'UT':{s:36.99,n:42.00,w:-114.05,e:-109.04},
+      'VT':{s:42.73,n:45.02,w:-73.44,e:-71.46},'VA':{s:36.54,n:39.47,w:-83.68,e:-75.24},
+      'WA':{s:45.54,n:49.00,w:-124.73,e:-116.92},'WV':{s:37.20,n:40.64,w:-82.64,e:-77.72},
+      'WI':{s:42.49,n:47.31,w:-92.89,e:-86.25},'WY':{s:40.99,n:45.01,w:-111.06,e:-104.05},
+      'DC':{s:38.79,n:38.99,w:-77.12,e:-76.91}
+    };
+
+    const radius = 40000;
+    const query = `[out:json][timeout:30];(way["landuse"="industrial"](around:${radius},${lat},${lng});way["landuse"="warehouse"](around:${radius},${lat},${lng});way["building"="warehouse"](around:${radius},${lat},${lng}););out center;`;
     const https = require('https');
     const options = {
       hostname: 'overpass-api.de',
@@ -513,6 +540,7 @@ router.get('/industrial-zones', async (req, res) => {
       const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)**2;
       return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
     };
+    const bounds = state ? stateBounds[state] : null;
     const zones = (data.elements || [])
       .filter(e => e.center || (e.lat && e.lon))
       .map(e => ({
@@ -521,11 +549,12 @@ router.get('/industrial-zones', async (req, res) => {
         name: e.tags && e.tags.name ? e.tags.name : null,
       }))
       .filter(z => {
-        const dist = haversine(parseFloat(lat), parseFloat(lng), z.lat, z.lng);
-        return dist < 50000;
+        if (bounds) {
+          if (z.lat < bounds.s || z.lat > bounds.n || z.lng < bounds.w || z.lng > bounds.e) return false;
+        }
+        return true;
       })
-      .filter(z => !occupied.some(c => haversine(c.lat, c.lng, z.lat, z.lng) < 150))
-      ;
+      .filter(z => !occupied.some(c => haversine(c.lat, c.lng, z.lat, z.lng) < 150));
     res.json({ zones });
   } catch (error) {
     console.error('Industrial zones error:', error.message);
