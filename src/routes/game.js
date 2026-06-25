@@ -474,6 +474,28 @@ router.post('/admin/auction-company', async (req, res) => {
   }
 });
 
+
+// GET /api/game/config - serve public config to frontend
+router.get('/config', async (req, res) => {
+  res.json({ mapboxToken: process.env.MAPBOX_API_KEY });
+});
+
+// GET /api/game/map-companies - returns all companies with coordinates for map
+router.get('/map-companies', async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT c.id, c.name, c.hq_city, c.hq_state, c.hq_latitude, c.hq_longitude,
+             c.location_latitude, c.location_longitude, p.username
+      FROM companies c
+      LEFT JOIN players p ON c.owner_id = p.id
+      WHERE c.hq_latitude IS NOT NULL OR c.location_latitude IS NOT NULL
+    `);
+    res.json({ companies: result.rows });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 router.post('/admin/delete-company', async (req, res) => {
   try {
     const { companyId } = req.body;

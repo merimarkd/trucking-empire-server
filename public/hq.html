@@ -198,6 +198,19 @@
     .market-item-row:hover { background: rgba(0,180,220,0.06); color: var(--teal); }
     .market-item-row.active { background: rgba(0,180,220,0.1); color: var(--teal); border-left: 2px solid var(--teal); }
     .market-item-price { color: var(--text-muted); font-size: 1.05rem; }
+    #freight-map { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+    .map-window-wrap { position: relative; width: 100%; height: calc(100% - 44px); overflow: hidden; }
+    .map-controls { position: absolute; top: 10px; right: 10px; z-index: 10; display: flex; flex-direction: column; gap: 6px; }
+    .map-control-btn { background: rgba(8,12,18,0.95); border: 1px solid var(--border); color: var(--teal); font-family: inherit; font-size: 0.82rem; padding: 6px 12px; cursor: pointer; border-radius: 2px; text-align: left; transition: background 0.2s; white-space: nowrap; }
+    .map-control-btn:hover { background: rgba(0,180,220,0.15); }
+    .map-control-btn.active { background: rgba(0,180,220,0.2); border-color: var(--teal); }
+    .map-legend { position: absolute; bottom: 30px; left: 10px; z-index: 10; background: rgba(8,12,18,0.9); border: 1px solid var(--border); padding: 10px 14px; font-size: 0.82rem; }
+    .map-legend-item { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; color: var(--text); }
+    .map-legend-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+    .map-company-popup { font-family: "Courier New", monospace; }
+    .mapboxgl-popup-content { background: rgba(8,12,18,0.97) !important; border: 1px solid rgba(0,180,220,0.4) !important; color: var(--text-hi) !important; padding: 12px !important; border-radius: 2px !important; min-width: 180px; }
+    .mapboxgl-popup-tip { display: none !important; }
+    .map-refresh-indicator { position: absolute; bottom: 10px; right: 10px; z-index: 10; background: rgba(8,12,18,0.8); border: 1px solid var(--border); color: var(--text-muted); font-size: 0.75rem; padding: 3px 8px; border-radius: 2px; }
     .ops-sidebar::-webkit-scrollbar { width: 4px; }
     .ops-sidebar::-webkit-scrollbar-track { background: rgba(0,0,0,0.3); }
     .ops-sidebar::-webkit-scrollbar-thumb { background: rgba(0,180,220,0.4); border-radius: 2px; }
@@ -251,6 +264,8 @@
     .loc-detail-value { color: var(--text-hi); letter-spacing: 0.04em; }
 </style>
 <script src="/socket.io/socket.io.js"></script>
+  <link href='https://api.mapbox.com/mapbox-gl-js/v3.3.0/mapbox-gl.css' rel='stylesheet' />
+  <script src='https://api.mapbox.com/mapbox-gl-js/v3.3.0/mapbox-gl.js'></script>
 </head>
 <body>
 <div id="minimized-taskbar"></div>
@@ -875,6 +890,44 @@ function openTabWindow(tabId, tabName) {
     'map': '<p>Interactive Map - Coming Soon</p>'
   };
   
+  if (tabId === 'map') {
+    tabWindow.style.width = '1848px';
+    tabWindow.style.height = '1157px';
+    tabWindow.style.left = '757px';
+    tabWindow.style.top = '92px';
+    tabWindow.innerHTML = `
+      <div class="window-header">
+        <span style="color:var(--teal);font-size:0.92rem;letter-spacing:0.08em;">FREIGHT EMPIRE — INTERACTIVE MAP</span>
+        <div class="window-controls">
+          <button class="win-btn" onclick="showWindowMenu(event, this.closest('.game-window'))">&#8942;</button>
+          <button class="win-btn win-btn-minimize" onclick="toggleMinimize(this.closest('.game-window'))">&#8211;</button>
+          <button class="win-btn win-btn-close" onclick="closeMapWindow()">X</button>
+        </div>
+      </div>
+      <div class="map-window-wrap">
+        <div id="freight-map"></div>
+        <div class="map-controls">
+          <button class="map-control-btn active" id="toggleCompanies" onclick="toggleMapLayer('companies')">&#9632; Companies</button>
+          <button class="map-control-btn active" id="toggleZones" onclick="toggleMapLayer('zones')">&#9632; Industrial Zones</button>
+          <button class="map-control-btn" onclick="centerMapOnHQ()">&#8853; My HQ</button>
+          <button class="map-control-btn" onclick="refreshMap()">&#8635; Refresh</button>
+        </div>
+        <div class="map-legend">
+          <div class="map-legend-item"><div class="map-legend-dot" style="background:#00b4dc;"></div>Your Company</div>
+          <div class="map-legend-item"><div class="map-legend-dot" style="background:#e87c2a;"></div>Other Companies</div>
+          <div class="map-legend-item"><div class="map-legend-dot" style="background:rgba(0,180,220,0.3);border:2px solid #00b4dc;"></div>Industrial Zone</div>
+        </div>
+        <div class="map-refresh-indicator" id="mapRefreshIndicator">Last updated: just now</div>
+      </div>
+    `;
+    tabWindow.querySelector('.window-controls .win-btn-close').addEventListener('click', closeMapWindow);
+    makeDraggable(tabWindow);
+    makeResizable(tabWindow);
+    document.body.appendChild(tabWindow);
+    initFreightMap();
+    return;
+  }
+
   if (tabId === 'market') {
     tabWindow.style.width = '1848px';
     tabWindow.style.height = '1157px';
@@ -1247,6 +1300,131 @@ function toggleLocInfo() {
   const info = document.getElementById('locMainInfo');
   info.style.display = info.style.display === 'none' ? '' : 'none';
 }
+
+
+// ============ FREIGHT MAP ============
+const MAPBOX_TOKEN = window.MAPBOX_TOKEN || '';
+let freightMap = null;
+let mapRefreshInterval = null;
+let mapLayers = { companies: true, zones: true };
+let mapMarkers = [];
+
+async function initFreightMap() {
+  if (typeof mapboxgl === 'undefined') {
+    console.error('Mapbox GL JS not loaded');
+    return;
+  }
+  if (!window.MAPBOX_TOKEN) {
+    const cfg = await fetch(API + '/api/game/config').then(r => r.json());
+    window.MAPBOX_TOKEN = cfg.mapboxToken;
+  }
+  mapboxgl.accessToken = window.MAPBOX_TOKEN;
+  freightMap = new mapboxgl.Map({
+    container: 'freight-map',
+    style: 'mapbox://styles/mapbox/dark-v11',
+    center: [-96.7970, 32.7767],
+    zoom: 4,
+    minZoom: 3,
+    maxZoom: 18
+  });
+  freightMap.addControl(new mapboxgl.NavigationControl(), 'bottom-right');
+  freightMap.on('load', () => {
+    loadMapCompanies();
+    mapRefreshInterval = setInterval(() => {
+      loadMapCompanies();
+      updateMapRefreshIndicator();
+    }, 60000);
+  });
+}
+
+function updateMapRefreshIndicator() {
+  const el = document.getElementById('mapRefreshIndicator');
+  if (el) el.textContent = 'Last updated: just now';
+  setTimeout(() => {
+    if (el) el.textContent = 'Refreshes every 60s';
+  }, 3000);
+}
+
+async function loadMapCompanies() {
+  try {
+    const res = await fetch(API + '/api/game/map-companies', {
+      headers: { 'Authorization': 'Bearer ' + localStorage.getItem('authToken') }
+    });
+    const data = await res.json();
+    clearMapMarkers();
+    if (!data.companies) return;
+    data.companies.forEach(company => {
+      const lat = parseFloat(company.location_latitude || company.hq_latitude);
+      const lng = parseFloat(company.location_longitude || company.hq_longitude);
+      if (isNaN(lat) || isNaN(lng)) return;
+      const isMyCompany = companyData && company.id === companyData.id;
+      const el = document.createElement('div');
+      el.style.cssText = `
+        width: 14px; height: 14px; border-radius: 50%;
+        background: ${isMyCompany ? '#00b4dc' : '#e87c2a'};
+        border: 2px solid ${isMyCompany ? '#fff' : 'rgba(232,124,42,0.5)'};
+        box-shadow: 0 0 ${isMyCompany ? '10px #00b4dc' : '6px rgba(232,124,42,0.6)'};
+        cursor: pointer;
+      `;
+      const popup = new mapboxgl.Popup({ offset: 15, closeButton: false })
+        .setHTML(`
+          <div class="map-company-popup" style="font-family:'Courier New',monospace;">
+            <div style="color:#00b4dc;font-weight:700;font-size:0.9rem;margin-bottom:4px;">${company.name}</div>
+            <div style="color:#a8b4c0;font-size:0.78rem;">Owner: ${company.username || 'Unknown'}</div>
+            <div style="color:#a8b4c0;font-size:0.78rem;">${company.hq_city || ''}, ${company.hq_state || ''}</div>
+            ${isMyCompany ? '<div style="color:#00b4dc;font-size:0.75rem;margin-top:4px;">&#9733; Your Company</div>' : ''}
+          </div>
+        `);
+      const marker = new mapboxgl.Marker(el)
+        .setLngLat([lng, lat])
+        .setPopup(popup)
+        .addTo(freightMap);
+      mapMarkers.push(marker);
+      if (!mapLayers.companies) el.style.display = 'none';
+    });
+    updateMapRefreshIndicator();
+  } catch(e) { console.error('Map companies error:', e); }
+}
+
+function clearMapMarkers() {
+  mapMarkers.forEach(m => m.remove());
+  mapMarkers = [];
+}
+
+function toggleMapLayer(layer) {
+  mapLayers[layer] = !mapLayers[layer];
+  const btn = document.getElementById('toggle' + layer.charAt(0).toUpperCase() + layer.slice(1));
+  if (btn) btn.classList.toggle('active', mapLayers[layer]);
+  if (layer === 'companies') {
+    mapMarkers.forEach(m => {
+      const el = m.getElement();
+      if (el) el.style.display = mapLayers.companies ? '' : 'none';
+    });
+  }
+}
+
+function centerMapOnHQ() {
+  if (!freightMap || !companyData) return;
+  const lat = parseFloat(companyData.location_latitude || companyData.hq_latitude);
+  const lng = parseFloat(companyData.location_longitude || companyData.hq_longitude);
+  if (isNaN(lat) || isNaN(lng)) return;
+  freightMap.flyTo({ center: [lng, lat], zoom: 12, duration: 1500 });
+}
+
+function refreshMap() {
+  loadMapCompanies();
+}
+
+function closeMapWindow() {
+  if (mapRefreshInterval) { clearInterval(mapRefreshInterval); mapRefreshInterval = null; }
+  if (freightMap) { freightMap.remove(); freightMap = null; }
+  const win = document.getElementById('tab-map');
+  if (win) win.remove();
+  const taskbar = document.getElementById('minimized-taskbar');
+  const item = taskbar ? taskbar.querySelector('[data-win-id="tab-map"]') : null;
+  if (item) item.remove();
+}
+// ============ END FREIGHT MAP ============
 
 function showTooltip(event, text) {
   const tooltip = document.getElementById('tooltip');
