@@ -1471,48 +1471,148 @@ async function openMarketOrders() {
   const w = document.createElement('div');
   w.id = 'market-orders-window';
   w.className = 'game-window';
-  w.style.cssText = 'width:700px;height:400px;left:450px;top:150px;';
+  w.style.cssText = 'width:900px;height:600px;left:450px;top:120px;';
   w.innerHTML = `
     <div class="window-header">
-      <span style="color:var(--teal);font-size:0.92rem;letter-spacing:0.08em;">MY MARKET ORDERS</span>
+      <span style="color:var(--teal);font-size:0.92rem;letter-spacing:0.08em;">MARKET ORDERS</span>
       <div class="window-controls">
         <button class="win-btn" onclick="showWindowMenu(event, this.closest('.game-window'))">&#8942;</button>
         <button class="win-btn win-btn-minimize" onclick="toggleMinimize(this.closest('.game-window'))">&#8211;</button>
         <button class="win-btn win-btn-close" onclick="this.closest('.game-window').remove()">X</button>
       </div>
     </div>
-    <div class="window-content">
-      <table class="market-orders-table" style="width:100%;">
-        <thead><tr><th>Item</th><th>Type</th><th>Qty</th><th>Price</th><th>Expires</th><th>Action</th></tr></thead>
-        <tbody id="myOrdersBody"><tr><td colspan="6" class="market-empty">Loading...</td></tr></tbody>
-      </table>
+    <div style="display:flex;flex-direction:column;height:calc(100% - 44px);font-family:'Courier New',monospace;">
+      <div style="display:flex;border-bottom:1px solid var(--border);padding:0 12px;">
+        <button class="mo-tab active" onclick="switchMOTab('myOrders')" style="padding:8px 16px;background:transparent;border:none;border-bottom:2px solid var(--teal);color:var(--teal);font-family:inherit;font-size:0.88rem;cursor:pointer;letter-spacing:0.08em;">My Orders</button>
+        <button class="mo-tab" onclick="switchMOTab('orderHistory')" style="padding:8px 16px;background:transparent;border:none;border-bottom:2px solid transparent;color:var(--text-muted);font-family:inherit;font-size:0.88rem;cursor:pointer;letter-spacing:0.08em;">Order History</button>
+      </div>
+      <div id="moContent" style="flex:1;overflow-y:auto;padding:12px;">
+        <div style="margin-bottom:16px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+            <span style="color:var(--text-hi);font-size:0.92rem;font-weight:700;">Selling</span>
+            <input type="text" placeholder="Filter on Type" style="background:var(--input-bg);border:1px solid var(--border);color:var(--text-hi);font-family:inherit;font-size:0.82rem;padding:4px 10px;border-radius:2px;width:200px;" oninput="filterMOTable('sellBody', this.value)">
+          </div>
+          <table class="market-orders-table" style="width:100%;">
+            <thead><tr>
+              <th>Item<span class="sort-arrow"></span></th>
+              <th>Qty<span class="sort-arrow"></span></th>
+              <th>Price/Unit<span class="sort-arrow"></span></th>
+              <th>Location<span class="sort-arrow"></span></th>
+              <th>Expires<span class="sort-arrow"></span></th>
+              <th>Action</th>
+            </tr></thead>
+            <tbody id="sellBody"><tr><td colspan="6" class="market-empty">Loading...</td></tr></tbody>
+          </table>
+        </div>
+        <div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+            <span style="color:var(--text-hi);font-size:0.92rem;font-weight:700;">Buying</span>
+            <input type="text" placeholder="Filter on Type" style="background:var(--input-bg);border:1px solid var(--border);color:var(--text-hi);font-family:inherit;font-size:0.82rem;padding:4px 10px;border-radius:2px;width:200px;" oninput="filterMOTable('buyBody', this.value)">
+          </div>
+          <table class="market-orders-table" style="width:100%;">
+            <thead><tr>
+              <th>Item<span class="sort-arrow"></span></th>
+              <th>Qty<span class="sort-arrow"></span></th>
+              <th>Price/Unit<span class="sort-arrow"></span></th>
+              <th>Min Qty<span class="sort-arrow"></span></th>
+              <th>Location<span class="sort-arrow"></span></th>
+              <th>Expires<span class="sort-arrow"></span></th>
+              <th>Action</th>
+            </tr></thead>
+            <tbody id="buyBody"><tr><td colspan="7" class="market-empty">Loading...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+      <div style="border-top:1px solid var(--border);padding:10px 14px;display:grid;grid-template-columns:1fr 1fr;gap:4px 20px;font-size:0.82rem;">
+        <span style="color:var(--text-muted);">Orders Remaining: <span style="color:var(--text-hi);">15 of 15 max open orders</span></span>
+        <span style="color:var(--text-muted);">Ask Range: <span style="color:var(--text-hi);">Limited to businesses</span></span>
+        <span style="color:var(--text-muted);">Total in Escrow: <span style="color:var(--text-hi);" id="moEscrow">$0.00</span></span>
+        <span style="color:var(--text-muted);">Bid Range: <span style="color:var(--text-hi);">Limited to businesses</span></span>
+        <span style="color:var(--text-muted);">Base Broker Fee: <span style="color:var(--text-hi);">3.00% of order value</span></span>
+        <span style="color:var(--text-muted);">Modification Range: <span style="color:var(--text-hi);">Limited to businesses</span></span>
+        <span style="color:var(--text-muted);">Transaction Tax: <span style="color:var(--text-hi);">State sales tax applies</span></span>
+        <span></span>
+        <span style="color:var(--text-muted);">Sell Orders Total: <span style="color:#e05555;" id="moSellTotal">$0.00</span></span>
+        <span style="color:var(--text-muted);">Buy Orders Total: <span style="color:#55aa55;" id="moBuyTotal">$0.00</span></span>
+      </div>
     </div>
   `;
   makeDraggable(w);
   makeResizable(w);
   document.body.appendChild(w);
+  loadMyOrders();
+}
+
+function switchMOTab(tab) {
+  document.querySelectorAll('.mo-tab').forEach(t => {
+    t.style.borderBottomColor = 'transparent';
+    t.style.color = 'var(--text-muted)';
+  });
+  event.target.style.borderBottomColor = 'var(--teal)';
+  event.target.style.color = 'var(--teal)';
+  if (tab === 'myOrders') loadMyOrders();
+  else {
+    document.getElementById('sellBody').innerHTML = '<tr><td colspan="6" class="market-empty">Order history coming soon</td></tr>';
+    document.getElementById('buyBody').innerHTML = '<tr><td colspan="7" class="market-empty">Order history coming soon</td></tr>';
+  }
+}
+
+function filterMOTable(tbodyId, val) {
+  const tbody = document.getElementById(tbodyId);
+  if (!tbody) return;
+  Array.from(tbody.querySelectorAll('tr')).forEach(row => {
+    row.style.display = row.textContent.toLowerCase().includes(val.toLowerCase()) ? '' : 'none';
+  });
+}
+
+async function loadMyOrders() {
   try {
     const res = await fetch(API + '/api/market/my-orders', {
       headers: { 'Authorization': 'Bearer ' + localStorage.getItem('authToken') }
     });
     const data = await res.json();
-    const tbody = document.getElementById('myOrdersBody');
-    if (!data.orders.length) { tbody.innerHTML = '<tr><td colspan="6" class="market-empty">No active orders</td></tr>'; return; }
     const formatExpiry = (dt) => {
       const diff = new Date(dt) - new Date();
       const days = Math.floor(diff / 86400000);
-      return days + 'd';
+      const hrs = Math.floor((diff % 86400000) / 3600000);
+      return days + 'd ' + hrs + 'h';
     };
-    tbody.innerHTML = data.orders.map(o => `
+    const sells = data.orders.filter(o => o.order_type === 'sell');
+    const buys = data.orders.filter(o => o.order_type === 'buy');
+    const sellBody = document.getElementById('sellBody');
+    const buyBody = document.getElementById('buyBody');
+    if (sellBody) sellBody.innerHTML = sells.length ? sells.map(o => `
       <tr>
         <td>${o.item_name}</td>
-        <td style="color:${o.order_type==='buy'?'#55aa55':'#e05555'}">${o.order_type.toUpperCase()}</td>
         <td>${o.quantity}</td>
-        <td>$${parseFloat(o.price_per_unit).toLocaleString()}</td>
+        <td class="price-sell">$${parseFloat(o.price_per_unit).toLocaleString('en-US',{minimumFractionDigits:2})}</td>
+        <td>${o.subcategory || '—'}</td>
         <td>${formatExpiry(o.expires_at)}</td>
-        <td><button onclick="cancelMarketOrder('${o.id}')" style="background:rgba(200,64,64,0.1);border:1px solid rgba(200,64,64,0.3);color:var(--danger);font-family:inherit;font-size:0.72rem;padding:3px 8px;cursor:pointer;border-radius:2px;">Cancel</button></td>
-      </tr>`).join('');
-  } catch(e) {}
+        <td><button onclick="cancelMarketOrder('${o.id}')" style="background:rgba(200,64,64,0.1);border:1px solid rgba(200,64,64,0.3);color:var(--danger);font-family:inherit;font-size:0.82rem;padding:3px 8px;cursor:pointer;border-radius:2px;">Cancel</button></td>
+      </tr>`).join('') : '<tr><td colspan="6" class="market-empty">No sell orders found</td></tr>';
+    if (buyBody) buyBody.innerHTML = buys.length ? buys.map(o => `
+      <tr>
+        <td>${o.item_name}</td>
+        <td>${o.quantity}</td>
+        <td class="price-buy">$${parseFloat(o.price_per_unit).toLocaleString('en-US',{minimumFractionDigits:2})}</td>
+        <td>1</td>
+        <td>${o.subcategory || '—'}</td>
+        <td>${formatExpiry(o.expires_at)}</td>
+        <td><button onclick="cancelMarketOrder('${o.id}')" style="background:rgba(200,64,64,0.1);border:1px solid rgba(200,64,64,0.3);color:var(--danger);font-family:inherit;font-size:0.82rem;padding:3px 8px;cursor:pointer;border-radius:2px;">Cancel</button></td>
+      </tr>`).join('') : '<tr><td colspan="7" class="market-empty">No buy orders found</td></tr>';
+    const sellTotal = sells.reduce((sum, o) => sum + parseFloat(o.price_per_unit) * o.quantity, 0);
+    const buyTotal = buys.reduce((sum, o) => sum + parseFloat(o.price_per_unit) * o.quantity, 0);
+    const escrow = buyTotal;
+    const remaining = document.getElementById('moEscrow');
+    if (remaining) remaining.textContent = '$' + escrow.toLocaleString('en-US',{minimumFractionDigits:2});
+    const st = document.getElementById('moSellTotal');
+    if (st) st.textContent = '$' + sellTotal.toLocaleString('en-US',{minimumFractionDigits:2});
+    const bt = document.getElementById('moBuyTotal');
+    if (bt) bt.textContent = '$' + buyTotal.toLocaleString('en-US',{minimumFractionDigits:2});
+    const ordersRemaining = document.querySelector('#market-orders-window .mo-remaining');
+    const total = data.orders.length;
+    if (ordersRemaining) ordersRemaining.textContent = (15 - total) + ' of 15 max open orders';
+  } catch(e) { console.error('My orders error:', e); }
 }
 
 async function cancelMarketOrder(orderId) {
