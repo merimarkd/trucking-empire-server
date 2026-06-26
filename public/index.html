@@ -783,6 +783,29 @@
             companyMiniMap.setPaintProperty(layer, 'line-width', roadWidthExpr);
           }
         });
+        // GPS-style route number shields
+        if (companyMiniMap.getLayer('road-label-simple')) {
+          companyMiniMap.setLayoutProperty('road-label-simple', 'text-field', ['get', 'ref']);
+          companyMiniMap.setLayoutProperty('road-label-simple', 'text-size', 11);
+          companyMiniMap.setLayoutProperty('road-label-simple', 'text-font', ['DIN Pro Bold', 'Arial Unicode MS Bold']);
+          companyMiniMap.setPaintProperty('road-label-simple', 'text-color', [
+            'match', ['get', 'class'],
+            'motorway', '#ffffff',
+            'trunk',    '#000000',
+            'primary',  '#ffffff',
+            '#ffffff'
+          ]);
+          companyMiniMap.setPaintProperty('road-label-simple', 'text-halo-color', [
+            'match', ['get', 'class'],
+            'motorway', '#1a3a8f',
+            'trunk',    '#ffffff',
+            'primary',  '#006830',
+            '#333333'
+          ]);
+          companyMiniMap.setPaintProperty('road-label-simple', 'text-halo-width', 4);
+          companyMiniMap.setPaintProperty('road-label-simple', 'text-halo-blur', 0);
+          companyMiniMap.setLayoutProperty('road-label-simple', 'visibility', 'visible');
+        }
         companyMiniMap.on('click', (e) => validateAndPlaceMarker(e.lngLat.lat, e.lngLat.lng));
       });
     } else {
