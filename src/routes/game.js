@@ -878,4 +878,94 @@ router.post('/admin/verify-purge', async (req, res) => {
   }
 });
 
+
+// GET /api/game/validate-location - validate HQ placement by highway proximity
+router.get('/validate-location', async (req, res) => {
+  try {
+    const { lat, lng, state } = req.query;
+    if (!lat || !lng) return res.status(400).json({ error: 'lat and lng required' });
+    const latF = parseFloat(lat);
+    const lngF = parseFloat(lng);
+    const searchRadius = 8047;
+    const maxRadius = 4828;
+    const hwQuery = `[out:json][timeout:15];(way["highway"="motorway"](around:${searchRadius},${latF},${lngF});way["highway"="trunk"](around:${searchRadius},${latF},${lngF});way["highway"="primary"](around:${searchRadius},${latF},${lngF}););out center tags;`;
+    const https = require('https');
+    const overpassData = await new Promise((resolve, reject) => {
+      https.get({
+        hostname: 'overpass-api.de',
+        path: '/api/interpreter?data=' + encodeURIComponent(hwQuery),
+        headers: { 'User-Agent': 'FreightEmpire/1.0 (game; contact@merimarkdigital.com)' }
+      }, (r) => {
+        let d = '';
+        r.on('data', c => d += c);
+        r.on('end', () => { try { resolve(JSON.parse(d)); } catch(e) { reject(e); } });
+      }).on('error', reject);
+    });
+    const haversine = (lat1, lng1, lat2, lng2) => {
+      const R = 6371000;
+      const dLat = (lat2-lat1)*Math.PI/180;
+      const dLng = (lng2-lng1)*Math.PI/180;
+      const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)**2;
+      return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    };
+    const hwLabels = { motorway: 'Interstate', trunk: 'US Route', primary: 'State Route' };
+    let nearest = null;
+    let nearestDist = Infinity;
+    for (const el of (overpassData.elements || [])) {
+      const elLat = el.center ? el.center.lat : el.lat;
+      const elLng = el.center ? el.center.lon : el.lon;
+      if (!elLat || !elLng) continue;
+      const dist = haversine(latF, lngF, elLat, elLng);
+      if (dist < nearestDist) {
+        nearestDist = dist;
+        nearest = {
+          type: el.tags && el.tags.highway ? el.tags.highway : 'primary',
+          ref: el.tags && el.tags.ref ? el.tags.ref : null,
+          name: el.tags && el.tags.name ? el.tags.name : null
+        };
+      }
+    }
+    const distMiles = nearest ? (nearestDist / 1609.34).toFixed(1) : null;
+    const hwLabel = nearest ? (hwLabels[nearest.type] || 'Highway') : 'Major highway';
+    const hwName = nearest ? (nearest.ref || nearest.name || hwLabel) : null;
+    if (!nearest || nearestDist > maxRadius) {
+      return res.json({
+        valid: false,
+        message: hwName
+          ? hwName + ' is ' + distMiles + ' miles away. Must be within 3 miles of an Interstate, US Route, or State Route.'
+          : 'No major highway found within 5 miles. Choose a location closer to an Interstate, US Route, or State Route.'
+      });
+    }
+    const mapboxKey = process.env.MAPBOX_API_KEY;
+    const geoUrl = 'https://api.mapbox.com/geocoding/v5/mapbox.places/' + lngF + ',' + latF + '.json?access_token=' + mapboxKey + '&country=us&types=address';
+    const geoRes = await fetch(geoUrl);
+    const geoData = await geoRes.json();
+    let address = null;
+    const feature = geoData.features && geoData.features[0];
+    if (feature) {
+      const context = feature.context || [];
+      const postcodeCtx = context.find(c => c.id && c.id.startsWith('postcode'));
+      const placeCtx = context.find(c => c.id && c.id.startsWith('place'));
+      const regionCtx = context.find(c => c.id && c.id.startsWith('region'));
+      const streetName = feature.text || 'Industrial Blvd';
+      const streetNum = (Math.abs(Math.round(latF * lngF * 100)) % 8900) + 100;
+      const zip = postcodeCtx ? postcodeCtx.text : generateZip(state);
+      const city = placeCtx ? placeCtx.text : '';
+      const stateAbbr = regionCtx ? (regionCtx.short_code ? regionCtx.short_code.replace('US-', '') : (state || '')) : (state || '');
+      address = streetNum + ' ' + streetName + ', ' + city + ', ' + stateAbbr + ' ' + zip;
+    } else {
+      address = (Math.floor(Math.random() * 8900) + 100) + ' Industrial Blvd, ' + generateZip(state);
+    }
+    res.json({ valid: true, address, nearestHighway: hwName, highwayType: hwLabel, distanceMiles: distMiles });
+  } catch (error) {
+    console.error('Validate location error:', error.message);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+function generateZip(state) {
+  const p = { 'AL':'350','AK':'995','AZ':'850','AR':'716','CA':'900','CO':'800','CT':'060','DE':'197','FL':'320','GA':'300','HI':'967','ID':'832','IL':'600','IN':'460','IA':'500','KS':'660','KY':'400','LA':'700','ME':'040','MD':'210','MA':'010','MI':'480','MN':'550','MS':'390','MO':'630','MT':'590','NE':'680','NV':'890','NH':'030','NJ':'070','NM':'870','NY':'100','NC':'270','ND':'580','OH':'430','OK':'730','OR':'970','PA':'150','RI':'029','SC':'290','SD':'570','TN':'370','TX':'750','UT':'840','VT':'050','VA':'220','WA':'980','WV':'247','WI':'530','WY':'820','DC':'200' };
+  return (state && p[state] ? p[state] : '100') + String(Math.floor(Math.random() * 90) + 10);
+}
+
 module.exports = router;

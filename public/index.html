@@ -472,7 +472,7 @@
         </div>
       </div>
       <div id="zoneSection" style="display:none;">
-        <label>Select Industrial Zone <span style="color:var(--text-muted);font-size:0.8rem;">— Click a zone on the map</span></label>
+        <label>HQ Location <span style="color:var(--text-muted);font-size:0.8rem;">— Click the map to place your HQ</span></label>
         <div id="company-minimap"></div>
         <div id="zoneStatus" style="color:var(--text-muted);font-size:0.82rem;margin-top:6px;text-align:center;">Loading industrial zones...</div>
       </div>
@@ -709,8 +709,7 @@
   });
 
   let companyMiniMap = null;
-  let zoneMarkers = [];
-  let selectedZone = null;
+  let locationMarker = null;
 
   function toggleStateDropdown() {
     const btn = document.getElementById('stateSelectBtn');
@@ -742,19 +741,18 @@
     cityInput.disabled = !state;
     cityInput.value = '';
     selectedLocation = null;
-    selectedZone = null;
+    if (locationMarker) { locationMarker.remove(); locationMarker = null; }
     document.getElementById('createBtn').disabled = true;
     document.getElementById('zoneSection').style.display = 'none';
     document.getElementById('selectedLocation').classList.remove('active');
     if (companyMiniMap) { companyMiniMap.remove(); companyMiniMap = null; }
   }
 
-  async function loadIndustrialZones(lat, lng, cityName) {
+  async function loadMinimap(lat, lng) {
     document.getElementById('zoneSection').style.display = 'block';
-    document.getElementById('zoneStatus').innerHTML = '<span class="loading-blink">Loading industrial zones...</span>';
-    zoneMarkers.forEach(m => m && m.remove());
-    zoneMarkers = [];
-    selectedZone = null;
+    document.getElementById('zoneStatus').textContent = 'Click anywhere on the map to place your HQ.';
+    if (locationMarker) { locationMarker.remove(); locationMarker = null; }
+    document.getElementById('createBtn').disabled = true;
 
     if (!companyMiniMap) {
       const cfg = await fetch(API + '/api/game/config').then(r => r.json());
@@ -763,54 +761,46 @@
         container: 'company-minimap',
         style: 'mapbox://styles/mapbox/dark-v11',
         center: [lng, lat],
-        zoom: 11
+        zoom: 12
       });
       companyMiniMap.addControl(new mapboxgl.NavigationControl(), 'bottom-right');
-      companyMiniMap.on('load', () => fetchAndShowZones(lat, lng, cityName));
+      companyMiniMap.on('load', () => {
+        companyMiniMap.on('click', (e) => validateAndPlaceMarker(e.lngLat.lat, e.lngLat.lng));
+      });
     } else {
-      companyMiniMap.flyTo({ center: [lng, lat], zoom: 11 });
-      fetchAndShowZones(lat, lng, cityName);
+      companyMiniMap.flyTo({ center: [lng, lat], zoom: 12 });
+      companyMiniMap.off('click');
+      companyMiniMap.on('click', (e) => validateAndPlaceMarker(e.lngLat.lat, e.lngLat.lng));
     }
   }
 
-  async function fetchAndShowZones(lat, lng, cityName) {
+  async function validateAndPlaceMarker(lat, lng) {
+    document.getElementById('zoneStatus').innerHTML = '<span class="loading-blink">Validating location...</span>';
+    document.getElementById('createBtn').disabled = true;
+    if (locationMarker) locationMarker.remove();
+    const el = document.createElement('div');
+    el.className = 'zone-marker';
+    locationMarker = new mapboxgl.Marker(el).setLngLat([lng, lat]).addTo(companyMiniMap);
     try {
-      const state = document.getElementById('hqStateSelect') ? document.getElementById('hqStateSelect').value : '';
-      const res = await fetch(API + '/api/game/industrial-zones?lat=' + lat + '&lng=' + lng + '&state=' + state);
+      const state = document.getElementById('hqStateSelect').value;
+      const res = await fetch(API + '/api/game/validate-location?lat=' + lat + '&lng=' + lng + '&state=' + state);
       const data = await res.json();
-      if (!data.zones || data.zones.length === 0) {
-        document.getElementById('zoneStatus').textContent = 'No industrial zones found near ' + cityName + '. Please choose a different city.';
-        document.getElementById('createBtn').disabled = true;
+      if (!data.valid) {
+        el.style.background = 'rgba(200,64,64,0.4)';
+        el.style.borderColor = '#c84040';
+        document.getElementById('zoneStatus').innerHTML = '<span style="color:var(--danger)">' + data.message + '</span>';
+        selectedLocation = Object.assign({}, selectedLocation, { locationLat: null, locationLng: null, zoneName: null });
         return;
       }
-      document.getElementById('zoneStatus').textContent = data.zones.length + ' industrial zone(s) found. Click a marker to select your location.';
-      data.zones.forEach((zone, i) => {
-        const el = document.createElement('div');
-        el.className = 'zone-marker';
-        el.title = zone.name || 'Industrial Zone ' + (i+1);
-        const marker = new mapboxgl.Marker(el)
-          .setLngLat([zone.lng, zone.lat])
-          .addTo(companyMiniMap);
-        el.addEventListener('click', () => selectZone(zone, el));
-        zoneMarkers.push(marker);
-      });
+      el.classList.add('selected');
+      selectedLocation = Object.assign({}, selectedLocation, { locationLat: lat, locationLng: lng, zoneName: data.address });
+      document.getElementById('locationName').textContent = data.address;
+      document.getElementById('selectedLocation').classList.add('active');
+      document.getElementById('zoneStatus').innerHTML = '<span style="color:var(--teal)">&#10003; ' + data.highwayType + ' ' + data.nearestHighway + ' is ' + data.distanceMiles + ' mi away</span>';
+      document.getElementById('createBtn').disabled = false;
     } catch(e) {
-      document.getElementById('zoneStatus').textContent = 'Error loading zones. Please try again.';
+      document.getElementById('zoneStatus').innerHTML = '<span style="color:var(--danger)">Error validating location. Please try again.</span>';
     }
-  }
-
-  function selectZone(zone, el) {
-    document.querySelectorAll('.zone-marker').forEach(m => m.classList.remove('selected'));
-    el.classList.add('selected');
-    selectedZone = zone;
-    selectedLocation = {
-      ...selectedLocation,
-      locationLat: zone.lat,
-      locationLng: zone.lng,
-      zoneName: zone.name || 'Industrial Zone'
-    };
-    document.getElementById('zoneStatus').textContent = 'Zone selected: ' + (zone.name || 'Industrial Zone');
-    document.getElementById('createBtn').disabled = false;
   }
 
   function selectLocation(el, name, lat, lng, county, neighborhood, city, state) {
@@ -820,7 +810,7 @@
     document.getElementById("locationName").textContent = name;
     document.getElementById("selectedLocation").classList.add("active");
     document.getElementById("createBtn").disabled = true;
-    loadIndustrialZones(lat, lng, city || name);
+    loadMinimap(lat, lng);
   }
 
   document.addEventListener("click", function(e) {
