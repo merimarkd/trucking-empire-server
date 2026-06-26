@@ -511,7 +511,7 @@ router.get('/industrial-zones', async (req, res) => {
       'DC':{s:38.79,n:38.99,w:-77.12,e:-76.91}
     };
 
-    const radius = 25000;
+    const radius = 10000;
     // Use OSM area filter for state to get precise boundaries
     const stateOsmIds = {
       'AL':162110016,'AK':162109846,'AZ':162017790,'AR':162109828,'CA':162117809,
@@ -602,7 +602,7 @@ router.get('/industrial-zones', async (req, res) => {
       used.add(i);
       rawZones.forEach((other, j) => {
         if (used.has(j)) return;
-        if (haversine(zone.lat, zone.lng, other.lat, other.lng) < 800) {
+        if (haversine(zone.lat, zone.lng, other.lat, other.lng) < 1500) {
           cluster.push(other);
           used.add(j);
         }
