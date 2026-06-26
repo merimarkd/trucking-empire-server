@@ -783,29 +783,116 @@
             companyMiniMap.setPaintProperty(layer, 'line-width', roadWidthExpr);
           }
         });
-        // GPS-style route number shields
+        // Hide default road labels
         if (companyMiniMap.getLayer('road-label-simple')) {
-          companyMiniMap.setLayoutProperty('road-label-simple', 'text-field', ['get', 'ref']);
-          companyMiniMap.setLayoutProperty('road-label-simple', 'text-size', 11);
-          companyMiniMap.setLayoutProperty('road-label-simple', 'text-font', ['DIN Pro Bold', 'Arial Unicode MS Bold']);
-          companyMiniMap.setPaintProperty('road-label-simple', 'text-color', [
-            'match', ['get', 'class'],
-            'motorway', '#ffffff',
-            'trunk',    '#000000',
-            'primary',  '#ffffff',
-            '#ffffff'
-          ]);
-          companyMiniMap.setPaintProperty('road-label-simple', 'text-halo-color', [
-            'match', ['get', 'class'],
-            'motorway', '#1a3a8f',
-            'trunk',    '#ffffff',
-            'primary',  '#006830',
-            '#333333'
-          ]);
-          companyMiniMap.setPaintProperty('road-label-simple', 'text-halo-width', 4);
-          companyMiniMap.setPaintProperty('road-label-simple', 'text-halo-blur', 0);
-          companyMiniMap.setLayoutProperty('road-label-simple', 'visibility', 'visible');
+          companyMiniMap.setLayoutProperty('road-label-simple', 'visibility', 'none');
         }
+
+        // Draw GPS-style shield images on canvas and register with map
+        function makeShield(bgColor, borderColor, textColor, shape) {
+          const w = 48, h = 36;
+          const c = document.createElement('canvas');
+          c.width = w; c.height = h;
+          const ctx = c.getContext('2d');
+          ctx.clearRect(0, 0, w, h);
+          if (shape === 'interstate') {
+            // Blue interstate shield shape
+            ctx.beginPath();
+            ctx.moveTo(4, 6);
+            ctx.lineTo(w-4, 6);
+            ctx.lineTo(w-2, 14);
+            ctx.lineTo(w-2, h-6);
+            ctx.quadraticCurveTo(w-2, h-2, w-6, h-2);
+            ctx.lineTo(6, h-2);
+            ctx.quadraticCurveTo(2, h-2, 2, h-6);
+            ctx.lineTo(2, 14);
+            ctx.closePath();
+            ctx.fillStyle = bgColor;
+            ctx.fill();
+            ctx.strokeStyle = borderColor;
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            // Top notch
+            ctx.beginPath();
+            ctx.moveTo(4, 6);
+            ctx.quadraticCurveTo(w/2, 0, w-4, 6);
+            ctx.fillStyle = borderColor;
+            ctx.fill();
+          } else if (shape === 'us') {
+            // US route pentagon shield
+            ctx.beginPath();
+            ctx.moveTo(w/2, 2);
+            ctx.lineTo(w-2, 10);
+            ctx.lineTo(w-2, h-2);
+            ctx.lineTo(2, h-2);
+            ctx.lineTo(2, 10);
+            ctx.closePath();
+            ctx.fillStyle = bgColor;
+            ctx.fill();
+            ctx.strokeStyle = borderColor;
+            ctx.lineWidth = 2;
+            ctx.stroke();
+          } else {
+            // State route rounded rectangle
+            const r = 5;
+            ctx.beginPath();
+            ctx.moveTo(r+2, 2);
+            ctx.lineTo(w-r-2, 2);
+            ctx.quadraticCurveTo(w-2, 2, w-2, r+2);
+            ctx.lineTo(w-2, h-r-2);
+            ctx.quadraticCurveTo(w-2, h-2, w-r-2, h-2);
+            ctx.lineTo(r+2, h-2);
+            ctx.quadraticCurveTo(2, h-2, 2, h-r-2);
+            ctx.lineTo(2, r+2);
+            ctx.quadraticCurveTo(2, 2, r+2, 2);
+            ctx.closePath();
+            ctx.fillStyle = bgColor;
+            ctx.fill();
+            ctx.strokeStyle = borderColor;
+            ctx.lineWidth = 2;
+            ctx.stroke();
+          }
+          return c;
+        }
+
+        companyMiniMap.addImage('shield-interstate', makeShield('#1a3a8f','#ffffff','#ffffff','interstate'), {pixelRatio:2});
+        companyMiniMap.addImage('shield-us',         makeShield('#ffffff','#000000','#000000','us'),         {pixelRatio:2});
+        companyMiniMap.addImage('shield-state',      makeShield('#1a5c2a','#ffffff','#ffffff','state'),      {pixelRatio:2});
+
+        // Custom shield symbol layer on top of roads
+        companyMiniMap.addLayer({
+          id: 'road-shields-custom',
+          type: 'symbol',
+          source: 'composite',
+          'source-layer': 'road',
+          filter: ['all',
+            ['in', ['get', 'class'], ['literal', ['motorway','trunk','primary']]],
+            ['has', 'ref']
+          ],
+          layout: {
+            'icon-image': ['match', ['get', 'class'],
+              'motorway', 'shield-interstate',
+              'trunk',    'shield-us',
+              'shield-state'
+            ],
+            'icon-text-fit': 'both',
+            'icon-text-fit-padding': [4, 6, 4, 6],
+            'text-field': ['get', 'ref'],
+            'text-font': ['DIN Pro Bold', 'Arial Unicode MS Bold'],
+            'text-size': ['interpolate', ['linear'], ['zoom'], 8, 8, 14, 12],
+            'text-color': ['match', ['get', 'class'],
+              'motorway', '#ffffff',
+              'trunk',    '#000000',
+              '#ffffff'
+            ],
+            'symbol-placement': 'line',
+            'symbol-spacing': ['interpolate', ['linear'], ['zoom'], 8, 300, 14, 150],
+            'icon-size': ['interpolate', ['linear'], ['zoom'], 8, 0.6, 14, 1.0],
+            'icon-allow-overlap': false,
+            'text-allow-overlap': false,
+          }
+        });
+
         companyMiniMap.on('click', (e) => validateAndPlaceMarker(e.lngLat.lat, e.lngLat.lng));
       });
     } else {
