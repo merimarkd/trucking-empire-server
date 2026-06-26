@@ -187,9 +187,6 @@ await pool.query(`ALTER TABLE companies ADD COLUMN IF NOT EXISTS hq_city VARCHAR
     await pool.query(`ALTER TABLE companies ADD COLUMN IF NOT EXISTS location_latitude DECIMAL(10,7)`);
     await pool.query(`ALTER TABLE companies ADD COLUMN IF NOT EXISTS location_longitude DECIMAL(10,7)`);
     console.log('✓ Migration: Added location_latitude and location_longitude to companies');
-    await pool.query(`ALTER TABLE companies ADD COLUMN IF NOT EXISTS location_latitude DECIMAL(10,7)`);
-    await pool.query(`ALTER TABLE companies ADD COLUMN IF NOT EXISTS location_longitude DECIMAL(10,7)`);
-    console.log('✓ Migration: Added location_latitude and location_longitude to companies');
 
 // Create drivers table
     await pool.query(`
