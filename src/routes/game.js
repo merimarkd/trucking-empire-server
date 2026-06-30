@@ -1297,7 +1297,7 @@ router.get('/validate-location', async (req, res) => {
 
     // Check if the click point is over a body of water (ocean, lake, river, pond, beach)
     try {
-      const waterUrl = 'https://api.mapbox.com/v4/mapbox.mapbox-streets-v8/tilequery/' + lngF + ',' + latF + '.json?radius=50&layers=water,waterway&access_token=' + mapboxKey;
+      const waterUrl = 'https://api.mapbox.com/v4/mapbox.mapbox-streets-v8/tilequery/' + lngF + ',' + latF + '.json?radius=10&layers=water,waterway&access_token=' + mapboxKey;
       const waterRes = await fetch(waterUrl);
       const waterData = await waterRes.json();
       if (waterData.features && waterData.features.length > 0) {
