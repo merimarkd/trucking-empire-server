@@ -511,6 +511,81 @@ await pool.query(`ALTER TABLE companies ADD COLUMN IF NOT EXISTS hq_city VARCHAR
       ON CONFLICT (model_id, name) DO NOTHING
     `);
     console.log('✓ Migration: Seeded truck trims');
+
+    // Add price modifiers to engine and transmission options
+    await pool.query(`ALTER TABLE engine_options ADD COLUMN IF NOT EXISTS price_modifier INTEGER DEFAULT 0`);
+    await pool.query(`ALTER TABLE transmission_options ADD COLUMN IF NOT EXISTS price_modifier INTEGER DEFAULT 0`);
+    console.log('✓ Migration: Added price_modifier columns');
+
+    // Set engine price modifiers (cost delta from trim base price, scaled by displacement/hp tier)
+    await pool.query(`
+      UPDATE engine_options SET price_modifier = v.modifier FROM (VALUES
+        ('Cummings', 'X12', 0),
+        ('Cummings', 'X15', 9000),
+        ('Motown Diesel', 'DD13', 0),
+        ('Motown Diesel', 'DD15', 7000),
+        ('Motown Diesel', 'DD16', 14000),
+        ('PACCO MX', 'MX-11', 0),
+        ('PACCO MX', 'MX-13', 8000),
+        ('Volvar', 'D11', 0),
+        ('Volvar', 'D13', 8500),
+        ('Mackson', 'MP7', 0),
+        ('Mackson', 'MP8', 8500)
+      ) AS v(manufacturer_name, model_name, modifier)
+      WHERE engine_options.manufacturer_name = v.manufacturer_name AND engine_options.model_name = v.model_name
+    `);
+    console.log('✓ Migration: Set engine price modifiers');
+
+    // Set transmission price modifiers
+    await pool.query(`
+      UPDATE transmission_options SET price_modifier = v.modifier FROM (VALUES
+        ('Eatonn Fuller', 'Roadranger 10-Speed', 0),
+        ('Eatonn Fuller', 'Roadranger 13-Speed', 1500),
+        ('Eatonn Fuller', 'Roadranger 18-Speed', 2200),
+        ('Eatonn Fuller', 'Advantage 10-Speed', 5500),
+        ('Allisson', '4000 Series', 9500),
+        ('PACCO', 'PACCO AMT', 6000),
+        ('Mackson', 'mDrive HD', 6200),
+        ('Volvar', 'I-Shift', 6200)
+      ) AS v(manufacturer_name, model_name, modifier)
+      WHERE transmission_options.manufacturer_name = v.manufacturer_name AND transmission_options.model_name = v.model_name
+    `);
+    console.log('✓ Migration: Set transmission price modifiers');
+
+    // Link trims to compatible engines (manufacturer house engines + Cummings as common third-party option)
+    await pool.query(`
+      INSERT INTO truck_trim_engines (trim_id, engine_id)
+      SELECT t.id, e.id
+      FROM truck_trims t
+      JOIN truck_models mo ON t.model_id = mo.id
+      JOIN truck_manufacturers mf ON mo.manufacturer_id = mf.id
+      JOIN engine_options e ON (
+        (mf.name IN ('Kentworth', 'Peterbuilt', 'Western Eagle', 'Continental Trucks') AND e.manufacturer_name IN ('PACCO MX', 'Cummings'))
+        OR (mf.name = 'Freightlite' AND e.manufacturer_name IN ('Motown Diesel', 'Cummings'))
+        OR (mf.name = 'Mackson' AND e.manufacturer_name IN ('Mackson', 'Cummings'))
+        OR (mf.name = 'Volvar Trucks' AND e.manufacturer_name IN ('Volvar', 'Cummings'))
+      )
+      ON CONFLICT DO NOTHING
+    `);
+    console.log('✓ Migration: Linked trims to compatible engines');
+
+    // Link trims to compatible transmissions (Eatonn Fuller universal, manufacturer AMT for their own trucks, Allisson for vocational trims)
+    await pool.query(`
+      INSERT INTO truck_trim_transmissions (trim_id, transmission_id)
+      SELECT t.id, tr.id
+      FROM truck_trims t
+      JOIN truck_models mo ON t.model_id = mo.id
+      JOIN truck_manufacturers mf ON mo.manufacturer_id = mf.id
+      JOIN transmission_options tr ON (
+        tr.manufacturer_name = 'Eatonn Fuller'
+        OR (mf.name = 'Mackson' AND tr.manufacturer_name = 'Mackson')
+        OR (mf.name = 'Volvar Trucks' AND tr.manufacturer_name = 'Volvar')
+        OR (mf.name IN ('Kentworth', 'Peterbuilt', 'Western Eagle', 'Continental Trucks') AND tr.manufacturer_name = 'PACCO')
+        OR (mo.body_style ILIKE '%Vocational%' AND tr.manufacturer_name = 'Allisson')
+      )
+      ON CONFLICT DO NOTHING
+    `);
+    console.log('✓ Migration: Linked trims to compatible transmissions');
   } catch (error) {
     if (error.message.includes('already exists')) {
       console.log('✓ Tables already exist');
