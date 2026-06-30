@@ -726,7 +726,7 @@
           type: 'fill',
           source: 'country-boundaries',
           'source-layer': 'country_boundaries',
-          filter: ['in', ['get', 'iso_3166_1'], ['literal', ['CA', 'MX']]],
+          filter: ['!=', ['get', 'iso_3166_1'], 'US'],
           paint: {
             'fill-color': '#0a0c0f',
             'fill-opacity': 0.75
