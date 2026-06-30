@@ -1281,12 +1281,14 @@ router.get('/validate-location', async (req, res) => {
     const distMiles = nearest ? (nearestDist / 1609.34).toFixed(1) : null;
     const hwLabel = nearest ? (hwLabels[nearest.type] || 'Highway') : 'Major highway';
     const hwName = nearest ? (nearest.ref || nearest.name || hwLabel) : null;
-    if (!nearest || nearestDist > maxRadius) {
+    if (!overpassAvailable) {
+      console.log('Overpass unavailable - skipping highway check for', latF, lngF);
+    } else if (!nearest || nearestDist > maxRadius) {
       return res.json({
         valid: false,
         message: hwName
           ? hwName + ' is ' + distMiles + ' miles away. Must be within 3 miles of an Interstate, US Route, or State Route.'
-          : 'No major highway found within 5 miles. Choose a location closer to an Interstate, US Route, or State Route.'
+          : 'No major highway found within 3 miles. Choose a location closer to an Interstate, US Route, or State Route.'
       });
     }
     const mapboxKey = process.env.MAPBOX_API_KEY;
