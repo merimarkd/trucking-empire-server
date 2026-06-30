@@ -908,14 +908,12 @@ function openTabWindow(tabId, tabName) {
         <div id="freight-map"></div>
         <div class="map-controls">
           <button class="map-control-btn active" id="toggleCompanies" onclick="toggleMapLayer('companies')">&#9632; Companies</button>
-          <button class="map-control-btn active" id="toggleZones" onclick="toggleMapLayer('zones')">&#9632; Industrial Zones</button>
           <button class="map-control-btn" onclick="centerMapOnHQ()">&#8853; My HQ</button>
           <button class="map-control-btn" onclick="refreshMap()">&#8635; Refresh</button>
         </div>
         <div class="map-legend">
           <div class="map-legend-item"><div class="map-legend-dot" style="background:#00b4dc;"></div>Your Company</div>
           <div class="map-legend-item"><div class="map-legend-dot" style="background:#e87c2a;"></div>Other Companies</div>
-          <div class="map-legend-item"><div class="map-legend-dot" style="background:rgba(0,180,220,0.3);border:2px solid #00b4dc;"></div>Industrial Zone</div>
         </div>
         <div class="map-refresh-indicator" id="mapRefreshIndicator">Last updated: just now</div>
       </div>
@@ -1393,13 +1391,77 @@ async function loadMapCompanies() {
         `);
       const marker = new mapboxgl.Marker(el)
         .setLngLat([lng, lat])
-        .setPopup(popup)
         .addTo(freightMap);
+      let hoverTimer = null;
+      el.addEventListener('mouseenter', () => {
+        hoverTimer = setTimeout(() => { popup.setLngLat([lng, lat]).addTo(freightMap); }, 1500);
+      });
+      el.addEventListener('mouseleave', () => {
+        if (hoverTimer) { clearTimeout(hoverTimer); hoverTimer = null; }
+        popup.remove();
+      });
+      if (!isMyCompany) {
+        el.addEventListener('click', (e) => {
+          e.stopPropagation();
+          popup.remove();
+          if (hoverTimer) { clearTimeout(hoverTimer); hoverTimer = null; }
+          showCompanyProfileWindow(company);
+        });
+      }
       mapMarkers.push(marker);
       if (!mapLayers.companies) el.style.display = 'none';
     });
     updateMapRefreshIndicator();
   } catch(e) { console.error('Map companies error:', e); }
+}
+
+function showCompanyProfileWindow(company) {
+  const existing = document.getElementById('company-profile-window');
+  if (existing) existing.remove();
+  const screenWidth = globalThis.innerWidth;
+  const screenHeight = globalThis.innerHeight;
+  const windowWidth = 420;
+  const windowHeight = 380;
+  const headerHeight = document.querySelector('.hq-header').offsetHeight;
+  const sidebarWidth = 350;
+  const left = sidebarWidth + (screenWidth - sidebarWidth * 2 - windowWidth) / 2;
+  const top = headerHeight + (screenHeight - headerHeight - windowHeight) / 2;
+  const win = document.createElement('div');
+  win.classList.add('game-window');
+  win.id = 'company-profile-window';
+  win.style.width = windowWidth + 'px';
+  win.style.height = windowHeight + 'px';
+  win.style.left = left + 'px';
+  win.style.top = top + 'px';
+  win.style.display = 'flex';
+  win.style.flexDirection = 'column';
+
+  const established = company.created_at ? new Date(company.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'Unknown';
+  const dot = company.dot_number || 'N/A';
+  const mc = company.mc_number || 'N/A';
+  const trucks = company.truck_count != null ? company.truck_count : '0';
+
+  win.innerHTML = `
+    <div class="window-header">
+      <span style="color:var(--teal);font-size:0.92rem;letter-spacing:0.08em;">COMPANY PROFILE</span>
+      <div class="window-controls">
+        <button class="win-btn win-btn-close" onclick="this.closest('.game-window').remove()">X</button>
+      </div>
+    </div>
+    <div style="padding:24px;font-family:'Courier New',monospace;color:var(--text);">
+      <div style="color:var(--teal);font-size:1.3rem;font-weight:700;margin-bottom:18px;text-transform:uppercase;letter-spacing:0.05em;">${company.name}</div>
+      <div style="display:grid;grid-template-columns:120px 1fr;row-gap:10px;font-size:0.92rem;">
+        <div style="color:var(--text-muted);">Owner</div><div>${company.username || 'Unknown'}</div>
+        <div style="color:var(--text-muted);">Location</div><div>${company.hq_city || '—'}, ${company.hq_state || '—'}</div>
+        <div style="color:var(--text-muted);">USDOT #</div><div>${dot}</div>
+        <div style="color:var(--text-muted);">MC #</div><div>${mc}</div>
+        <div style="color:var(--text-muted);">Fleet Size</div><div>${trucks} truck${trucks == 1 ? '' : 's'}</div>
+        <div style="color:var(--text-muted);">Established</div><div>${established}</div>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(win);
+  if (typeof makeDraggable === 'function') makeDraggable(win);
 }
 
 function clearMapMarkers() {

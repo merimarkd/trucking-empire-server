@@ -657,7 +657,9 @@ router.get('/map-companies', async (req, res) => {
   try {
     const result = await pool.query(`
       SELECT c.id, c.name, c.hq_city, c.hq_state, c.hq_latitude, c.hq_longitude,
-             c.location_latitude, c.location_longitude, p.username
+             c.location_latitude, c.location_longitude, p.username,
+             c.dot_number, c.mc_number, c.created_at,
+             (SELECT COUNT(*) FROM trucks WHERE company_id = c.id) as truck_count
       FROM companies c
       LEFT JOIN players p ON c.owner_id = p.id
       WHERE c.hq_latitude IS NOT NULL OR c.location_latitude IS NOT NULL
