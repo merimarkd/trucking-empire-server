@@ -902,6 +902,32 @@ router.post('/admin/verify-purge', async (req, res) => {
 
 
 // Major US metro areas for accurate city tier classification (top ~80 by metro population)
+// Major US ports - OSM tagging for port/harbor land is too inconsistent to rely on,
+// so we maintain an authoritative list with a blocking radius (in meters)
+const MAJOR_PORTS = [
+  {name:'Port of Los Angeles',lat:33.7395,lng:-118.2610,radius:3000},
+  {name:'Port of Long Beach',lat:33.7542,lng:-118.2165,radius:3000},
+  {name:'Port of New York/New Jersey',lat:40.6700,lng:-74.1500,radius:3500},
+  {name:'Port of Savannah',lat:32.1138,lng:-81.1455,radius:2500},
+  {name:'Port of Houston',lat:29.7355,lng:-95.0850,radius:3000},
+  {name:'Port of Virginia (Norfolk)',lat:36.8870,lng:-76.3340,radius:2500},
+  {name:'Port of Charleston',lat:32.8200,lng:-79.9200,radius:2000},
+  {name:'Port of Miami',lat:25.7745,lng:-80.1685,radius:1800},
+  {name:'Port Everglades',lat:26.0950,lng:-80.1180,radius:1800},
+  {name:'Port of Seattle',lat:47.5850,lng:-122.3450,radius:2000},
+  {name:'Port of Tacoma',lat:47.2660,lng:-122.4130,radius:2000},
+  {name:'Port of Oakland',lat:37.7990,lng:-122.3170,radius:2200},
+  {name:'Port of Baltimore',lat:39.2650,lng:-76.5450,radius:2000},
+  {name:'Port of New Orleans',lat:29.9400,lng:-90.0500,radius:2500},
+  {name:'Port of Tampa',lat:27.9300,lng:-82.4500,radius:1800},
+  {name:'Port of Jacksonville',lat:30.3850,lng:-81.5600,radius:1800},
+  {name:'Port of Mobile',lat:30.6900,lng:-88.0300,radius:1800},
+  {name:'Port of Philadelphia',lat:39.9100,lng:-75.1300,radius:1800},
+  {name:'Port of Boston',lat:42.3400,lng:-71.0200,radius:1800},
+  {name:'Port of Honolulu',lat:21.3050,lng:-157.8700,radius:1800},
+  {name:'Cape Canaveral / Kennedy Space Center',lat:28.4889,lng:-80.5778,radius:5000},
+];
+
 const MAJOR_METROS = [
   {name:'New York',lat:40.7128,lng:-74.0060,pop:8336000,tier:'metro'},
   {name:'Los Angeles',lat:34.0522,lng:-118.2437,pop:3979000,tier:'metro'},
@@ -1080,6 +1106,17 @@ router.get('/validate-location', async (req, res) => {
       });
     }
     const mapboxKey = process.env.MAPBOX_API_KEY;
+
+    // Check against known major US ports/spaceports (OSM tagging unreliable for these)
+    for (const port of MAJOR_PORTS) {
+      const portDist = haversine(latF, lngF, port.lat, port.lng);
+      if (portDist <= port.radius) {
+        return res.json({
+          valid: false,
+          message: 'This location is within ' + port.name + '. Choose a different site for your company HQ.'
+        });
+      }
+    }
 
     // Check for forbidden zones (airports, rail yards, hospitals, parks, monuments, protected land, etc.)
     try {
