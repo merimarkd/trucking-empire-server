@@ -753,11 +753,16 @@
         cityTier: data.cityTier,
         landValue: data.landValuePerAcre,
         lotSizeAcres: data.lotSizeAcres,
-        totalLandCost: data.totalLandCost
+        totalLandCost: data.totalLandCost,
+        freightAdvisory: data.freightAdvisory
       };
       document.getElementById('locationName').innerHTML = data.address + '<br><span style="color:var(--amber);">' + data.cityTier.toUpperCase() + ' ZONE — ' + data.lotSizeAcres + ' acres @ $' + data.landValuePerAcre.toLocaleString() + '/acre = $' + data.totalLandCost.toLocaleString() + ' total</span>';
       document.getElementById('selectedLocation').classList.add('active');
-      document.getElementById('zoneStatus').innerHTML = '<span style="color:var(--teal)">&#10003; ' + data.highwayType + ' ' + data.nearestHighway + ' is ' + data.distanceMiles + ' mi away</span>';
+      let statusHtml = '<span style="color:var(--teal)">&#10003; ' + data.highwayType + ' ' + data.nearestHighway + ' is ' + data.distanceMiles + ' mi away</span>';
+      if (data.freightAdvisory) {
+        statusHtml += '<br><span style="color:#e8c84a;">&#9888; ' + data.freightAdvisory + '</span>';
+      }
+      document.getElementById('zoneStatus').innerHTML = statusHtml;
       document.getElementById('createBtn').disabled = (data.totalLandCost > 500000);
       if (data.totalLandCost > 500000) {
         document.getElementById('zoneStatus').innerHTML += '<br><span style="color:var(--danger)">Insufficient funds — this lot costs more than your $500,000 starting capital.</span>';
