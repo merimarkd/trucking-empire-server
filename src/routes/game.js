@@ -1089,7 +1089,7 @@ router.get('/validate-location', async (req, res) => {
           hostname: 'overpass-api.de',
           path: '/api/interpreter',
           method: 'POST',
-          headers: { 'Content-Type': 'text/plain', 'Accept': 'application/json' }
+          headers: { 'Content-Type': 'text/plain', 'Accept': 'application/json', 'User-Agent': 'FreightEmpire/1.0 (game; contact@merimarkdigital.com)' }
         }, (r) => {
           let d = '';
           r.on('data', c => d += c);
