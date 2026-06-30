@@ -1080,6 +1080,24 @@ router.get('/validate-location', async (req, res) => {
       });
     }
     const mapboxKey = process.env.MAPBOX_API_KEY;
+
+    // Check if the click point lands in a residential area - block if so
+    try {
+      const tileQueryUrl = 'https://api.mapbox.com/v4/mapbox.mapbox-streets-v8/tilequery/' + lngF + ',' + latF + '.json?radius=50&layers=landuse&access_token=' + mapboxKey;
+      const tileRes = await fetch(tileQueryUrl);
+      const tileData = await tileRes.json();
+      const residentialHit = (tileData.features || []).find(f => f.properties && f.properties.class === 'residential');
+      if (residentialHit) {
+        return res.json({
+          valid: false,
+          message: 'This location is in a residential area. Choose an industrial, commercial, or undeveloped site for your company HQ.'
+        });
+      }
+    } catch (e) {
+      console.error('Residential check error:', e.message);
+      // If the check fails, allow placement to continue rather than blocking the player
+    }
+
     const geoUrl = 'https://api.mapbox.com/geocoding/v5/mapbox.places/' + lngF + ',' + latF + '.json?access_token=' + mapboxKey + '&country=us&types=address';
     const geoRes = await fetch(geoUrl);
     const geoData = await geoRes.json();
