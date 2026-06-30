@@ -1236,6 +1236,7 @@ router.get('/validate-location', async (req, res) => {
     const hwQuery = `[out:json][timeout:15];(way["highway"="motorway"](around:${searchRadius},${latF},${lngF});way["highway"="trunk"](around:${searchRadius},${latF},${lngF});way["highway"="primary"](around:${searchRadius},${latF},${lngF}););out center tags;`;
     const https = require('https');
     let overpassData = { elements: [] };
+    let overpassAvailable = true;
     try {
       overpassData = await new Promise((resolve, reject) => {
         https.get({
@@ -1247,11 +1248,12 @@ router.get('/validate-location', async (req, res) => {
           r.on('data', c => d += c);
           r.on('end', () => {
             try { resolve(JSON.parse(d)); }
-            catch(e) { resolve({ elements: [] }); }
+            catch(e) { overpassAvailable = false; resolve({ elements: [] }); }
           });
-        }).on('error', () => resolve({ elements: [] }));
+        }).on('error', () => { overpassAvailable = false; resolve({ elements: [] }); });
       });
     } catch (e) {
+      overpassAvailable = false;
       overpassData = { elements: [] };
     }
     const haversine = (lat1, lng1, lat2, lng2) => {
