@@ -1091,6 +1091,11 @@ router.get('/validate-location', async (req, res) => {
         'way["boundary"="protected_area"](around:200,' + latF + ',' + lngF + ');' +
         'way["historic"](around:150,' + latF + ',' + lngF + ');' +
         'way["landuse"~"military|cemetery"](around:200,' + latF + ',' + lngF + ');' +
+        'way["military"](around:300,' + latF + ',' + lngF + ');' +
+        'way["harbour"](around:300,' + latF + ',' + lngF + ');' +
+        'way["man_made"="pier"](around:200,' + latF + ',' + lngF + ');' +
+        'way["landuse"="port"](around:300,' + latF + ',' + lngF + ');' +
+        'way["industrial"="port"](around:300,' + latF + ',' + lngF + ');' +
         ');out tags 1;';
       const forbiddenRes = await new Promise((resolve) => {
         const req = require('https').request({
@@ -1120,8 +1125,9 @@ router.get('/validate-location', async (req, res) => {
         else if (tags.leisure) reason = 'a park or protected natural area';
         else if (tags.boundary === 'protected_area') reason = 'protected land';
         else if (tags.historic) reason = 'a historic site or monument';
-        else if (tags.landuse === 'military') reason = 'military property';
+        else if (tags.landuse === 'military' || tags.military) reason = 'military property';
         else if (tags.landuse === 'cemetery') reason = 'a cemetery';
+        else if (tags.harbour || tags.man_made === 'pier' || tags.landuse === 'port' || tags.industrial === 'port') reason = 'a port or harbor facility';
 
         return res.json({
           valid: false,
