@@ -716,13 +716,47 @@
             'text-halo-blur': 0
           }
         });
-
-        companyMiniMap.on('click', (e) => validateAndPlaceMarker(e.lngLat.lat, e.lngLat.lng));
+        // Grey out Canada and Mexico - not yet playable
+        companyMiniMap.addSource('country-boundaries', {
+          type: 'vector',
+          url: 'mapbox://mapbox.country-boundaries-v1'
+        });
+        companyMiniMap.addLayer({
+          id: 'locked-countries-fill',
+          type: 'fill',
+          source: 'country-boundaries',
+          'source-layer': 'country_boundaries',
+          filter: ['in', ['get', 'iso_3166_1'], ['literal', ['CA', 'MX']]],
+          paint: {
+            'fill-color': '#0a0c0f',
+            'fill-opacity': 0.75
+          }
+        });
+        companyMiniMap.addLayer({
+          id: 'locked-countries-label',
+          type: 'symbol',
+          source: 'country-boundaries',
+          'source-layer': 'country_boundaries',
+          filter: ['in', ['get', 'iso_3166_1'], ['literal', ['CA', 'MX']]],
+          layout: {
+            'symbol-placement': 'point',
+            'text-field': 'COMING SOON',
+            'text-font': ['DIN Pro Bold', 'Arial Unicode MS Bold'],
+            'text-size': 16,
+            'text-letter-spacing': 0.15
+          },
+          paint: {
+            'text-color': '#566470',
+            'text-halo-color': '#0a0c0f',
+            'text-halo-width': 1
+          }
+        });
+        companyMiniMap.on('click', handleMapClick);
       });
     } else {
       companyMiniMap.flyTo({ center: [lng, lat], zoom: 12 });
-      companyMiniMap.off('click');
-      companyMiniMap.on('click', (e) => validateAndPlaceMarker(e.lngLat.lat, e.lngLat.lng));
+      companyMiniMap.off('click', handleMapClick);
+      companyMiniMap.on('click', handleMapClick);
     }
   }
 
