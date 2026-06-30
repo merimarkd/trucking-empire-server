@@ -732,23 +732,33 @@
             'fill-opacity': 0.75
           }
         });
+        companyMiniMap.addSource('locked-country-points', {
+          type: 'geojson',
+          data: {
+            type: 'FeatureCollection',
+            features: [
+              { type: 'Feature', geometry: { type: 'Point', coordinates: [-106.3468, 56.1304] }, properties: {} },
+              { type: 'Feature', geometry: { type: 'Point', coordinates: [-102.5528, 23.6345] }, properties: {} }
+            ]
+          }
+        });
         companyMiniMap.addLayer({
           id: 'locked-countries-label',
           type: 'symbol',
-          source: 'country-boundaries',
-          'source-layer': 'country_boundaries',
-          filter: ['in', ['get', 'iso_3166_1'], ['literal', ['CA', 'MX']]],
+          source: 'locked-country-points',
           layout: {
             'symbol-placement': 'point',
-            'text-field': 'COMING SOON',
+            'text-field': 'COMING\nSOON',
             'text-font': ['DIN Pro Bold', 'Arial Unicode MS Bold'],
-            'text-size': 16,
-            'text-letter-spacing': 0.15
+            'text-size': ['interpolate', ['linear'], ['zoom'], 2, 36, 8, 90],
+            'text-letter-spacing': 0.2,
+            'text-allow-overlap': true,
+            'text-ignore-placement': true
           },
           paint: {
-            'text-color': '#566470',
+            'text-color': '#c84040',
             'text-halo-color': '#0a0c0f',
-            'text-halo-width': 1
+            'text-halo-width': 2
           }
         });
         companyMiniMap.on('click', handleMapClick);
