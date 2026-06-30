@@ -963,7 +963,45 @@ router.get('/validate-location', async (req, res) => {
       hqState = state || null;
       address = (Math.floor(Math.random() * 8900) + 100) + ' Industrial Blvd, ' + hqZip;
     }
-    res.json({ valid: true, address, nearestHighway: hwName, highwayType: hwLabel, distanceMiles: distMiles, hqCity, hqState, hqZip, hqCounty, hqNeighborhood });
+    // Determine city tier by bounding box area + calculate land value
+    let cityTier = 'rural';
+    let landValue = 2000;
+    let distFromCenter = 0;
+    try {
+      if (hqCity) {
+        const placeUrl = 'https://api.mapbox.com/geocoding/v5/mapbox.places/' + encodeURIComponent(hqCity + ', ' + (hqState || '')) + '.json?access_token=' + mapboxKey + '&country=us&types=place&limit=1';
+        const placeRes = await fetch(placeUrl);
+        const placeData = await placeRes.json();
+        const placeFeature = placeData.features && placeData.features[0];
+        if (placeFeature && placeFeature.bbox) {
+          const [w, s, e, n] = placeFeature.bbox;
+          const milesPerDegLat = 69;
+          const milesPerDegLng = 69 * Math.cos(((s + n) / 2) * Math.PI / 180);
+          const widthMiles = Math.abs(e - w) * milesPerDegLng;
+          const heightMiles = Math.abs(n - s) * milesPerDegLat;
+          const areaSqMi = widthMiles * heightMiles;
+
+          if (areaSqMi >= 500) { cityTier = 'metro'; landValue = 150000; }
+          else if (areaSqMi >= 200) { cityTier = 'large'; landValue = 60000; }
+          else if (areaSqMi >= 80) { cityTier = 'medium'; landValue = 25000; }
+          else if (areaSqMi >= 20) { cityTier = 'small'; landValue = 8000; }
+          else { cityTier = 'rural'; landValue = 2000; }
+
+          const centerLng = (w + e) / 2;
+          const centerLat = (s + n) / 2;
+          distFromCenter = haversine(latF, lngF, centerLat, centerLng) / 1609.34;
+          landValue = Math.round(landValue / (1 + distFromCenter / 3));
+        }
+      }
+    } catch (e) {
+      console.error('City tier lookup error:', e.message);
+    }
+
+    res.json({
+      valid: true, address, nearestHighway: hwName, highwayType: hwLabel, distanceMiles: distMiles,
+      hqCity, hqState, hqZip, hqCounty, hqNeighborhood,
+      cityTier, landValuePerAcre: landValue, distanceFromCenterMiles: distFromCenter.toFixed(1)
+    });
   } catch (error) {
     console.error('Validate location error:', error.message);
     res.status(500).json({ error: error.message });
