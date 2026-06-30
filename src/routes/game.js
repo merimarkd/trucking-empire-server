@@ -879,6 +879,119 @@ router.post('/admin/verify-purge', async (req, res) => {
 });
 
 
+// Major US metro areas for accurate city tier classification (top ~80 by metro population)
+const MAJOR_METROS = [
+  {name:'New York',lat:40.7128,lng:-74.0060,pop:8336000,tier:'metro'},
+  {name:'Los Angeles',lat:34.0522,lng:-118.2437,pop:3979000,tier:'metro'},
+  {name:'Chicago',lat:41.8781,lng:-87.6298,pop:2693000,tier:'metro'},
+  {name:'Houston',lat:29.7604,lng:-95.3698,pop:2320000,tier:'metro'},
+  {name:'Phoenix',lat:33.4484,lng:-112.0740,pop:1680000,tier:'metro'},
+  {name:'Philadelphia',lat:39.9526,lng:-75.1652,pop:1584000,tier:'metro'},
+  {name:'San Antonio',lat:29.4241,lng:-98.4936,pop:1547000,tier:'metro'},
+  {name:'San Diego',lat:32.7157,lng:-117.1611,pop:1423000,tier:'metro'},
+  {name:'Dallas',lat:32.7767,lng:-96.7970,pop:1304000,tier:'metro'},
+  {name:'Austin',lat:30.2672,lng:-97.7431,pop:978000,tier:'metro'},
+  {name:'Jacksonville',lat:30.3322,lng:-81.6557,pop:949000,tier:'large'},
+  {name:'Fort Worth',lat:32.7555,lng:-97.3308,pop:935000,tier:'large'},
+  {name:'Columbus',lat:39.9612,lng:-82.9988,pop:898000,tier:'large'},
+  {name:'Charlotte',lat:35.2271,lng:-80.8431,pop:885000,tier:'large'},
+  {name:'San Francisco',lat:37.7749,lng:-122.4194,pop:873000,tier:'large'},
+  {name:'Indianapolis',lat:39.7684,lng:-86.1581,pop:887000,tier:'large'},
+  {name:'Seattle',lat:47.6062,lng:-122.3321,pop:737000,tier:'large'},
+  {name:'Denver',lat:39.7392,lng:-104.9903,pop:715000,tier:'large'},
+  {name:'Washington',lat:38.9072,lng:-77.0369,pop:689000,tier:'large'},
+  {name:'Boston',lat:42.3601,lng:-71.0589,pop:675000,tier:'large'},
+  {name:'Nashville',lat:36.1627,lng:-86.7816,pop:689000,tier:'large'},
+  {name:'Memphis',lat:35.1495,lng:-90.0490,pop:633000,tier:'large'},
+  {name:'Portland',lat:45.5051,lng:-122.6750,pop:652000,tier:'large'},
+  {name:'Oklahoma City',lat:35.4676,lng:-97.5164,pop:681000,tier:'large'},
+  {name:'Las Vegas',lat:36.1699,lng:-115.1398,pop:651000,tier:'large'},
+  {name:'Louisville',lat:38.2527,lng:-85.7585,pop:617000,tier:'large'},
+  {name:'Baltimore',lat:39.2904,lng:-76.6122,pop:585000,tier:'large'},
+  {name:'Milwaukee',lat:43.0389,lng:-87.9065,pop:577000,tier:'large'},
+  {name:'Albuquerque',lat:35.0844,lng:-106.6504,pop:564000,tier:'large'},
+  {name:'Tucson',lat:32.2226,lng:-110.9747,pop:548000,tier:'large'},
+  {name:'Fresno',lat:36.7378,lng:-119.7871,pop:545000,tier:'large'},
+  {name:'Sacramento',lat:38.5816,lng:-121.4944,pop:525000,tier:'large'},
+  {name:'Kansas City',lat:39.0997,lng:-94.5786,pop:508000,tier:'large'},
+  {name:'Mesa',lat:33.4152,lng:-111.8315,pop:504000,tier:'large'},
+  {name:'Atlanta',lat:33.7490,lng:-84.3880,pop:499000,tier:'large'},
+  {name:'Omaha',lat:41.2565,lng:-95.9345,pop:486000,tier:'large'},
+  {name:'Colorado Springs',lat:38.8339,lng:-104.8214,pop:478000,tier:'large'},
+  {name:'Raleigh',lat:35.7796,lng:-78.6382,pop:474000,tier:'large'},
+  {name:'Miami',lat:25.7617,lng:-80.1918,pop:442000,tier:'large'},
+  {name:'Long Beach',lat:33.7701,lng:-118.1937,pop:466000,tier:'large'},
+  {name:'Virginia Beach',lat:36.8529,lng:-75.9780,pop:459000,tier:'large'},
+  {name:'Oakland',lat:37.8044,lng:-122.2712,pop:440000,tier:'large'},
+  {name:'Minneapolis',lat:44.9778,lng:-93.2650,pop:430000,tier:'large'},
+  {name:'Tulsa',lat:36.1540,lng:-95.9928,pop:413000,tier:'large'},
+  {name:'Tampa',lat:27.9506,lng:-82.4572,pop:399000,tier:'large'},
+  {name:'New Orleans',lat:29.9511,lng:-90.0715,pop:383000,tier:'large'},
+  {name:'Wichita',lat:37.6872,lng:-97.3301,pop:397000,tier:'large'},
+  {name:'Cleveland',lat:41.4993,lng:-81.6944,pop:362000,tier:'large'},
+  {name:'Bakersfield',lat:35.3733,lng:-119.0187,pop:407000,tier:'large'},
+  {name:'Aurora',lat:39.7294,lng:-104.8319,pop:386000,tier:'large'},
+  {name:'Anaheim',lat:33.8366,lng:-117.9143,pop:346000,tier:'large'},
+  {name:'Honolulu',lat:21.3069,lng:-157.8583,pop:345000,tier:'large'},
+  {name:'Santa Ana',lat:33.7455,lng:-117.8677,pop:310000,tier:'large'},
+  {name:'Riverside',lat:33.9533,lng:-117.3962,pop:331000,tier:'large'},
+  {name:'Corpus Christi',lat:27.8006,lng:-97.3964,pop:317000,tier:'medium'},
+  {name:'Lexington',lat:38.0406,lng:-84.5037,pop:323000,tier:'medium'},
+  {name:'Stockton',lat:37.9577,lng:-121.2908,pop:320000,tier:'medium'},
+  {name:'St. Louis',lat:38.6270,lng:-90.1994,pop:301000,tier:'medium'},
+  {name:'Saint Paul',lat:44.9537,lng:-93.0900,pop:311000,tier:'medium'},
+  {name:'Cincinnati',lat:39.1031,lng:-84.5120,pop:309000,tier:'medium'},
+  {name:'Pittsburgh',lat:40.4406,lng:-79.9959,pop:303000,tier:'medium'},
+  {name:'Greensboro',lat:36.0726,lng:-79.7920,pop:296000,tier:'medium'},
+  {name:'Anchorage',lat:61.2181,lng:-149.9003,pop:291000,tier:'medium'},
+  {name:'Plano',lat:33.0198,lng:-96.6989,pop:288000,tier:'medium'},
+  {name:'Lincoln',lat:40.8136,lng:-96.7026,pop:291000,tier:'medium'},
+  {name:'Orlando',lat:28.5383,lng:-81.3792,pop:307000,tier:'medium'},
+  {name:'Irvine',lat:33.6846,lng:-117.8265,pop:307000,tier:'medium'},
+  {name:'Newark',lat:40.7357,lng:-74.1724,pop:305000,tier:'medium'},
+  {name:'Durham',lat:35.9940,lng:-78.8986,pop:285000,tier:'medium'},
+  {name:'Chula Vista',lat:32.6401,lng:-117.0842,pop:275000,tier:'medium'},
+  {name:'Toledo',lat:41.6528,lng:-83.5379,pop:265000,tier:'medium'},
+  {name:'Fort Wayne',lat:41.0793,lng:-85.1394,pop:265000,tier:'medium'},
+  {name:'St. Petersburg',lat:27.7676,lng:-82.6403,pop:258000,tier:'medium'},
+  {name:'Laredo',lat:27.5306,lng:-99.4803,pop:256000,tier:'medium'},
+  {name:'Jersey City',lat:40.7178,lng:-74.0431,pop:262000,tier:'medium'},
+  {name:'Chandler',lat:33.3062,lng:-111.8413,pop:261000,tier:'medium'},
+  {name:'Madison',lat:43.0731,lng:-89.4012,pop:269000,tier:'medium'},
+  {name:'Buffalo',lat:42.8864,lng:-78.8784,pop:278000,tier:'medium'},
+  {name:'Reno',lat:39.5296,lng:-119.8138,pop:264000,tier:'medium'},
+  {name:'Gilbert',lat:33.3528,lng:-111.7890,pop:267000,tier:'medium'},
+  {name:'Norfolk',lat:36.8508,lng:-76.2859,pop:238000,tier:'medium'},
+  {name:'Boise',lat:43.6150,lng:-116.2023,pop:235000,tier:'medium'},
+  {name:'Spokane',lat:47.6588,lng:-117.4260,pop:230000,tier:'medium'},
+  {name:'Richmond',lat:37.5407,lng:-77.4360,pop:226000,tier:'medium'},
+  {name:'Baton Rouge',lat:30.4515,lng:-91.1871,pop:220000,tier:'medium'},
+  {name:'Billings',lat:45.7833,lng:-108.5007,pop:117000,tier:'small'},
+  {name:'Flagstaff',lat:35.1983,lng:-111.6513,pop:76000,tier:'small'},
+  {name:'Bozeman',lat:45.6770,lng:-111.0429,pop:53000,tier:'small'},
+];
+
+function haversine(lat1, lng1, lat2, lng2) {
+  const R = 6371000;
+  const dLat = (lat2-lat1) * Math.PI/180;
+  const dLng = (lng2-lng1) * Math.PI/180;
+  const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)**2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+
+function findNearestMetro(lat, lng) {
+  let nearest = null;
+  let nearestDist = Infinity;
+  for (const m of MAJOR_METROS) {
+    const dist = haversine(lat, lng, m.lat, m.lng) / 1609.34;
+    if (dist < nearestDist) {
+      nearestDist = dist;
+      nearest = m;
+    }
+  }
+  return { metro: nearest, distanceMiles: nearestDist };
+}
+
 // GET /api/game/validate-location - validate HQ placement by highway proximity
 router.get('/validate-location', async (req, res) => {
   try {
@@ -963,38 +1076,53 @@ router.get('/validate-location', async (req, res) => {
       hqState = state || null;
       address = (Math.floor(Math.random() * 8900) + 100) + ' Industrial Blvd, ' + hqZip;
     }
-    // Determine city tier by bounding box area + calculate land value
+    // Determine city tier using nearest major metro (population-based, reliable for odd geography)
     let cityTier = 'rural';
-    let landValue = 2000;
+    let landValue = 3000;
     let distFromCenter = 0;
-    try {
-      if (hqCity) {
-        const placeUrl = 'https://api.mapbox.com/geocoding/v5/mapbox.places/' + encodeURIComponent(hqCity + ', ' + (hqState || '')) + '.json?access_token=' + mapboxKey + '&country=us&types=place&limit=1';
-        const placeRes = await fetch(placeUrl);
-        const placeData = await placeRes.json();
-        const placeFeature = placeData.features && placeData.features[0];
-        if (placeFeature && placeFeature.bbox) {
-          const [w, s, e, n] = placeFeature.bbox;
-          const milesPerDegLat = 69;
-          const milesPerDegLng = 69 * Math.cos(((s + n) / 2) * Math.PI / 180);
-          const widthMiles = Math.abs(e - w) * milesPerDegLng;
-          const heightMiles = Math.abs(n - s) * milesPerDegLat;
-          const areaSqMi = widthMiles * heightMiles;
+    const tierBaseValues = { metro: 200000, large: 120000, medium: 60000, small: 15000, rural: 3000 };
 
-          if (areaSqMi >= 500) { cityTier = 'metro'; landValue = 200000; }
-          else if (areaSqMi >= 200) { cityTier = 'large'; landValue = 120000; }
-          else if (areaSqMi >= 80) { cityTier = 'medium'; landValue = 60000; }
-          else if (areaSqMi >= 20) { cityTier = 'small'; landValue = 15000; }
-          else { cityTier = 'rural'; landValue = 3000; }
+    const { metro: nearestMetro, distanceMiles: distToMetro } = findNearestMetro(latF, lngF);
 
-          const centerLng = (w + e) / 2;
-          const centerLat = (s + n) / 2;
-          distFromCenter = haversine(latF, lngF, centerLat, centerLng) / 1609.34;
-          landValue = Math.round(landValue / (1 + distFromCenter / 3));
+    if (nearestMetro && distToMetro <= 30) {
+      cityTier = nearestMetro.tier;
+      distFromCenter = distToMetro;
+      landValue = Math.round(tierBaseValues[cityTier] / (1 + distFromCenter / 3));
+    } else {
+      try {
+        if (hqCity) {
+          const placeUrl = 'https://api.mapbox.com/geocoding/v5/mapbox.places/' + encodeURIComponent(hqCity + ', ' + (hqState || '')) + '.json?access_token=' + mapboxKey + '&country=us&types=place&limit=1';
+          const placeRes = await fetch(placeUrl);
+          const placeData = await placeRes.json();
+          const placeFeature = placeData.features && placeData.features[0];
+          if (placeFeature && placeFeature.bbox) {
+            const [w, s, e, n] = placeFeature.bbox;
+            const milesPerDegLat = 69;
+            const milesPerDegLng = 69 * Math.cos(((s + n) / 2) * Math.PI / 180);
+            const widthMiles = Math.abs(e - w) * milesPerDegLng;
+            const heightMiles = Math.abs(n - s) * milesPerDegLat;
+            const areaSqMi = widthMiles * heightMiles;
+
+            if (areaSqMi >= 80) { cityTier = 'medium'; landValue = tierBaseValues.medium; }
+            else if (areaSqMi >= 20) { cityTier = 'small'; landValue = tierBaseValues.small; }
+            else { cityTier = 'rural'; landValue = tierBaseValues.rural; }
+
+            const centerLng = (w + e) / 2;
+            const centerLat = (s + n) / 2;
+            distFromCenter = haversine(latF, lngF, centerLat, centerLng) / 1609.34;
+            landValue = Math.round(landValue / (1 + distFromCenter / 3));
+          }
         }
+      } catch (e) {
+        console.error('City tier lookup error:', e.message);
       }
-    } catch (e) {
-      console.error('City tier lookup error:', e.message);
+    }
+
+    let freightAdvisory = null;
+    if (distToMetro > 80) {
+      freightAdvisory = 'This location is ' + Math.round(distToMetro) + ' miles from ' + (nearestMetro ? nearestMetro.name : 'the nearest major metro') + '. Expect long deadhead distances and limited freight volume in this area.';
+    } else if (distToMetro > 40) {
+      freightAdvisory = 'This location is ' + Math.round(distToMetro) + ' miles from ' + (nearestMetro ? nearestMetro.name : 'the nearest major metro') + '. Freight options may be lighter than major freight corridors.';
     }
 
     const lotSizes = { rural: 2, small: 3, medium: 4, large: 5, metro: 6 };
@@ -1005,7 +1133,7 @@ router.get('/validate-location', async (req, res) => {
       valid: true, address, nearestHighway: hwName, highwayType: hwLabel, distanceMiles: distMiles,
       hqCity, hqState, hqZip, hqCounty, hqNeighborhood,
       cityTier, landValuePerAcre: landValue, distanceFromCenterMiles: distFromCenter.toFixed(1),
-      lotSizeAcres, totalLandCost
+      lotSizeAcres, totalLandCost, freightAdvisory, nearestMetroName: nearestMetro ? nearestMetro.name : null
     });
   } catch (error) {
     console.error('Validate location error:', error.message);
