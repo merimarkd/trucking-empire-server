@@ -1280,15 +1280,15 @@ function updateLocationOverlay() {
   document.getElementById('locSecondary').style.display = 'none';
   const neighborhood = companyData.hq_neighborhood || null;
   const county = companyData.hq_county || null;
-  let detailRows = '';
-  if (neighborhood) detailRows += `<div class="loc-detail-row"><span class="loc-detail-label">District</span><span class="loc-detail-value">${neighborhood}</span></div>`;
   const zone = companyData.hq_zone || null;
+  let detailRows = '';
+  detailRows += `<div class="loc-detail-row"><span class="loc-detail-label">Country</span><span class="loc-detail-value">United States</span></div>`;
+  detailRows += `<div class="loc-detail-row"><span class="loc-detail-label">Region</span><span class="loc-detail-value">${region}</span></div>`;
+  detailRows += `<div class="loc-detail-row"><span class="loc-detail-label">State</span><span class="loc-detail-value">${stateName}</span></div>`;
+  if (county) detailRows += `<div class="loc-detail-row"><span class="loc-detail-label">County</span><span class="loc-detail-value">${county}</span></div>`;
+  if (neighborhood) detailRows += `<div class="loc-detail-row"><span class="loc-detail-label">District</span><span class="loc-detail-value">${neighborhood}</span></div>`;
   detailRows += `<div class="loc-detail-row"><span class="loc-detail-label">City</span><span class="loc-detail-value">${city}</span></div>`;
   if (zone) detailRows += `<div class="loc-detail-row"><span class="loc-detail-label">Zone</span><span class="loc-detail-value">${zone}</span></div>`;
-  if (county) detailRows += `<div class="loc-detail-row"><span class="loc-detail-label">County</span><span class="loc-detail-value">${county}</span></div>`;
-  detailRows += `<div class="loc-detail-row"><span class="loc-detail-label">State</span><span class="loc-detail-value">${stateName}</span></div>`;
-  detailRows += `<div class="loc-detail-row"><span class="loc-detail-label">Region</span><span class="loc-detail-value">${region}</span></div>`;
-  detailRows += `<div class="loc-detail-row"><span class="loc-detail-label">Country</span><span class="loc-detail-value">United States</span></div>`;
   document.getElementById('locDetail').innerHTML = detailRows;
 }
 
