@@ -981,11 +981,11 @@ router.get('/validate-location', async (req, res) => {
           const heightMiles = Math.abs(n - s) * milesPerDegLat;
           const areaSqMi = widthMiles * heightMiles;
 
-          if (areaSqMi >= 500) { cityTier = 'metro'; landValue = 150000; }
-          else if (areaSqMi >= 200) { cityTier = 'large'; landValue = 60000; }
-          else if (areaSqMi >= 80) { cityTier = 'medium'; landValue = 25000; }
-          else if (areaSqMi >= 20) { cityTier = 'small'; landValue = 8000; }
-          else { cityTier = 'rural'; landValue = 2000; }
+          if (areaSqMi >= 500) { cityTier = 'metro'; landValue = 200000; }
+          else if (areaSqMi >= 200) { cityTier = 'large'; landValue = 120000; }
+          else if (areaSqMi >= 80) { cityTier = 'medium'; landValue = 60000; }
+          else if (areaSqMi >= 20) { cityTier = 'small'; landValue = 15000; }
+          else { cityTier = 'rural'; landValue = 3000; }
 
           const centerLng = (w + e) / 2;
           const centerLat = (s + n) / 2;
