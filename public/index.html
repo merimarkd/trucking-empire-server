@@ -677,6 +677,11 @@
         style: 'mapbox://styles/mapbox/satellite-streets-v12',
         center: [lng || -98.5795, lat || 39.8283],
         zoom: lat ? 12 : 4,
+        minZoom: 3,
+        maxBounds: [
+          [-172.0, 5.0],
+          [-50.0, 75.0]
+        ]
       });
       companyMiniMap.addControl(new mapboxgl.NavigationControl(), 'bottom-right');
       companyMiniMap.on('load', () => {
