@@ -1115,9 +1115,15 @@ router.get('/validate-location', async (req, res) => {
 
     const { metro: nearestMetro, distanceMiles: distToMetro } = findNearestMetro(latF, lngF);
 
+    const tierOrder = ['rural', 'small', 'medium', 'large', 'metro'];
+
     if (nearestMetro && distToMetro <= 30) {
-      cityTier = nearestMetro.tier;
       distFromCenter = distToMetro;
+      const maxTierIndex = tierOrder.indexOf(nearestMetro.tier);
+      // Step down one tier rank approximately every 6 miles from center
+      const stepsDown = Math.floor(distToMetro / 6);
+      const effectiveTierIndex = Math.max(0, maxTierIndex - stepsDown);
+      cityTier = tierOrder[effectiveTierIndex];
       landValue = Math.round(tierBaseValues[cityTier] / (1 + distFromCenter / 3));
     } else {
       try {
