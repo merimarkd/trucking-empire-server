@@ -1376,7 +1376,7 @@ router.get('/validate-location', async (req, res) => {
       const countEl = densityRes && densityRes.elements && densityRes.elements.find(e => e.type === 'count');
       const buildingCount = countEl ? parseInt(countEl.tags.ways) : 0;
 
-      if (buildingCount >= 8) {
+      if (buildingCount >= 25) {
         return res.json({
           valid: false,
           message: 'This location appears to be in a residential neighborhood (' + buildingCount + ' nearby buildings detected). Choose an industrial, commercial, or undeveloped site for your company HQ.'
