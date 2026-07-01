@@ -1354,10 +1354,10 @@ router.get('/validate-location', async (req, res) => {
       console.error('Forbidden zone check error:', e.message);
     }
 
-    // Check building density at the click point - dense clusters indicate residential neighborhoods
+    // Check landuse tags - only block purely residential areas
     try {
-      const densityQuery = '[out:json][timeout:10];way["building"](around:100,' + latF + ',' + lngF + ');out count;';
-      const densityRes = await new Promise((resolve) => {
+      const landQuery = '[out:json][timeout:10];way["landuse"](around:100,' + latF + ',' + lngF + ');out tags 10;';
+      const landRes = await new Promise((resolve) => {
         const req = require('https').request({
           hostname: 'overpass-api.de',
           path: '/api/interpreter',
@@ -1369,22 +1369,23 @@ router.get('/validate-location', async (req, res) => {
           r.on('end', () => { try { resolve(JSON.parse(d)); } catch(e) { resolve(null); } });
         });
         req.on('error', () => resolve(null));
-        req.write('data=' + densityQuery);
+        req.write('data=' + landQuery);
         req.end();
       });
-
-      const countEl = densityRes && densityRes.elements && densityRes.elements.find(e => e.type === 'count');
-      const buildingCount = countEl ? parseInt(countEl.tags.ways) : 0;
-
-      if (buildingCount >= 25) {
-        return res.json({
-          valid: false,
-          message: 'This location appears to be in a residential neighborhood (' + buildingCount + ' nearby buildings detected). Choose an industrial, commercial, or undeveloped site for your company HQ.'
-        });
+      if (landRes && landRes.elements && landRes.elements.length > 0) {
+        const landuses = landRes.elements.map(e => e.tags && e.tags.landuse).filter(Boolean);
+        const ALLOWED = ['industrial','commercial','brownfield','warehouse','retail','mixed','construction'];
+        const hasBlocked = landuses.some(l => l === 'residential');
+        const hasAllowed = landuses.some(l => ALLOWED.includes(l));
+        if (hasBlocked && !hasAllowed) {
+          return res.json({
+            valid: false,
+            message: 'This location is in a residential area. Choose an industrial, commercial, or undeveloped site for your company HQ.'
+          });
+        }
       }
     } catch (e) {
-      console.error('Residential density check error:', e.message);
-      // If the check fails, allow placement to continue rather than blocking the player
+      console.error('Landuse check error:', e.message);
     }
 
     const geoUrl = 'https://api.mapbox.com/geocoding/v5/mapbox.places/' + lngF + ',' + latF + '.json?access_token=' + mapboxKey + '&country=us&types=address';
