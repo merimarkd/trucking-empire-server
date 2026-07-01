@@ -1231,60 +1231,36 @@ router.get('/validate-location', async (req, res) => {
     if (!lat || !lng) return res.status(400).json({ error: 'lat and lng required' });
     const latF = parseFloat(lat);
     const lngF = parseFloat(lng);
-    const searchRadius = 8047;
-    const maxRadius = 4828;
-    const hwQuery = `[out:json][timeout:15];(way["highway"="motorway"](around:${searchRadius},${latF},${lngF});way["highway"="trunk"](around:${searchRadius},${latF},${lngF});way["highway"="primary"](around:${searchRadius},${latF},${lngF}););out center tags;`;
-    const https = require('https');
-    let overpassData = { elements: [] };
-    let overpassAvailable = true;
-    try {
-      overpassData = await new Promise((resolve, reject) => {
-        https.get({
-          hostname: 'overpass-api.de',
-          path: '/api/interpreter?data=' + encodeURIComponent(hwQuery),
-          headers: { 'User-Agent': 'FreightEmpire/1.0 (game; contact@merimarkdigital.com)' }
-        }, (r) => {
-          let d = '';
-          r.on('data', c => d += c);
-          r.on('end', () => {
-            try { resolve(JSON.parse(d)); }
-            catch(e) { overpassAvailable = false; resolve({ elements: [] }); }
-          });
-        }).on('error', () => { overpassAvailable = false; resolve({ elements: [] }); });
-      });
-    } catch (e) {
-      overpassAvailable = false;
-      overpassData = { elements: [] };
-    }
-    const haversine = (lat1, lng1, lat2, lng2) => {
-      const R = 6371000;
-      const dLat = (lat2-lat1)*Math.PI/180;
-      const dLng = (lng2-lng1)*Math.PI/180;
-      const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)**2;
-      return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-    };
+    // Highway proximity check using local DB (no external API, no rate limits)
+    const maxRadius = 4828; // 3 miles in meters
+    const bboxDeg = 0.08; // ~5 miles bounding box for pre-filter
     const hwLabels = { motorway: 'Interstate', trunk: 'US Route', primary: 'State Route' };
-    let nearest = null;
-    let nearestDist = Infinity;
-    for (const el of (overpassData.elements || [])) {
-      const elLat = el.center ? el.center.lat : el.lat;
-      const elLng = el.center ? el.center.lon : el.lon;
-      if (!elLat || !elLng) continue;
-      const dist = haversine(latF, lngF, elLat, elLng);
-      if (dist < nearestDist) {
-        nearestDist = dist;
-        nearest = {
-          type: el.tags && el.tags.highway ? el.tags.highway : 'primary',
-          ref: el.tags && el.tags.ref ? el.tags.ref : null,
-          name: el.tags && el.tags.name ? el.tags.name : null
-        };
-      }
-    }
+
+    const hwResult = await pool.query(
+      `SELECT highway_type, ref, name,
+        (2 * 6371000 * asin(sqrt(
+          sin(radians(($1 - lat) / 2))^2 +
+          cos(radians($1)) * cos(radians(lat)) *
+          sin(radians(($2 - lng) / 2))^2
+        ))) AS dist_meters
+       FROM us_highways
+       WHERE lat BETWEEN $1 - $3 AND $1 + $3
+         AND lng BETWEEN $2 - $3 AND $2 + $3
+       ORDER BY dist_meters ASC
+       LIMIT 1`,
+      [latF, lngF, bboxDeg]
+    );
+
+    const hwRow = hwResult.rows[0] || null;
+    const nearestDist = hwRow ? parseFloat(hwRow.dist_meters) : Infinity;
+    const nearest = hwRow ? { type: hwRow.highway_type, ref: hwRow.ref, name: hwRow.name } : null;
     const distMiles = nearest ? (nearestDist / 1609.34).toFixed(1) : null;
     const hwLabel = nearest ? (hwLabels[nearest.type] || 'Highway') : 'Major highway';
     const hwName = nearest ? (nearest.ref || nearest.name || hwLabel) : null;
-    if (!overpassAvailable) {
-      console.log('Overpass unavailable - skipping highway check for', latF, lngF);
+    const dbHasData = hwResult.rows.length > 0 || (await pool.query('SELECT COUNT(*) as c FROM us_highways')).rows[0].c > 0;
+
+    if (!dbHasData) {
+      console.log('Highway DB empty - skipping check for', latF, lngF);
     } else if (!nearest || nearestDist > maxRadius) {
       return res.json({
         valid: false,
@@ -1506,9 +1482,9 @@ router.get('/validate-location', async (req, res) => {
 
     res.json({
       valid: true, address,
-      nearestHighway: overpassAvailable ? hwName : null,
-      highwayType: overpassAvailable ? hwLabel : null,
-      distanceMiles: overpassAvailable ? distMiles : null,
+      nearestHighway: (nearest && dbHasData) ? hwName : null,
+      highwayType: (nearest && dbHasData) ? hwLabel : null,
+      distanceMiles: (nearest && dbHasData) ? distMiles : null,
       hqCity, hqState, hqZip, hqCounty, hqNeighborhood,
       cityTier, landValuePerAcre: landValue, landValueSource, distanceFromCenterMiles: distFromCenter.toFixed(1),
       lotSizeAcres, totalLandCost, freightAdvisory, nearestMetroName: nearestMetro ? nearestMetro.name : null
