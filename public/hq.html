@@ -263,6 +263,13 @@
     .loc-detail-label { color: var(--teal); min-width: 90px; font-size: 0.88rem; text-transform: uppercase; letter-spacing: 0.1em; opacity: 0.7; }
     .loc-detail-value { color: var(--text-hi); letter-spacing: 0.04em; }
 .rr-subtab { background: transparent; border: none; border-bottom: 2px solid transparent; color: var(--text-muted); font-family: 'Courier New', monospace; font-size: 0.85rem; padding: 8px 14px; cursor: pointer; text-transform: uppercase; letter-spacing: 0.05em; width: auto; }
+#portalContent select, #portalContent input[type="number"], #portalContent input[type="text"] { width: 100%; padding: 8px 12px; background: var(--input-bg); border: 1px solid var(--border); color: var(--text-hi); font-family: 'Courier New', monospace; font-size: 0.88rem; border-radius: 2px; margin-bottom: 0; appearance: none; -webkit-appearance: none; }
+#portalContent select:focus, #portalContent input:focus { outline: none; border-color: var(--border-hi); }
+#portalContent select option { background: #0a0c0f; color: var(--text-hi); }
+#portalContent button:not(.rr-subtab):not(.map-control-btn) { width: 100%; padding: 10px 16px; background: var(--teal); color: #0a0c0f; border: none; border-radius: var(--radius, 2px); font-family: 'Courier New', monospace; font-weight: 700; cursor: pointer; text-transform: uppercase; font-size: 0.82rem; letter-spacing: 0.1em; }
+#portalContent button:not(.rr-subtab):not(.map-control-btn):hover { background: #00cff7; }
+#portalContent label { color: var(--text); font-family: 'Courier New', monospace; font-size: 0.85rem; }
+#portalContent input[type="checkbox"] { width: auto; accent-color: var(--teal); }
 .rr-subtab:hover { color: var(--teal); }
 .rr-subtab.active { color: var(--teal); border-bottom-color: var(--teal); }
 .rr-job-card { background: rgba(8,12,18,0.6); border: 1px solid var(--border); padding: 14px; border-radius: 2px; margin-bottom: 10px; }
