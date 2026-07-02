@@ -69,7 +69,7 @@ function sr(seed,n){
   let x=(seed*1000+n)^(n*2654435761);
   x=((x^(x>>>16))*0x45d9f3b)>>>0;
   x=((x^(x>>>16))*0x45d9f3b)>>>0;
-  return(x^(x>>>16))>>>0)/4294967296;
+  return((x^(x>>>16))>>>0)/4294967296;
 }
 function rp(a,s,n){return a[Math.floor(sr(s,n)*a.length)]||a[0]}
 function ri(a,b){return Math.floor(Math.random()*(b-a+1))+a}
