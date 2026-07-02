@@ -9,7 +9,7 @@ body{background:#0a0c0f;font-family:'Courier New',monospace;color:#a8b4c0;paddin
 h2{color:#00b4dc;font-size:1rem;letter-spacing:0.15em;text-transform:uppercase;margin-bottom:16px}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:16px;margin-bottom:20px}
 .card{background:rgba(8,12,18,0.97);border:1px solid rgba(0,180,220,0.22);border-top:2px solid #00b4dc;padding:12px;border-radius:2px}
-.card svg{display:block;margin:0 auto 10px}
+.card svg{display:block;margin:0 auto 10px;border-radius:50%}
 .name{color:#d4e0e8;font-size:0.72rem;font-weight:700;text-align:center;margin-bottom:2px}
 .meta{color:#566470;font-size:0.65rem;text-align:center;line-height:1.5}
 .exp{color:#e87c2a}.shape{color:#00b4dc;font-size:0.6rem}
@@ -24,359 +24,296 @@ button:hover{background:#00cff7}
 <button onclick="onePerShape()">One Per Head Shape</button>
 <script>
 const ETH=[
-  {id:'white',w:62,
-   skin:['#F5C9A0','#EDB87A','#E5A868','#D89055','#C87A45'],
-   hairC:['#1C0E08','#3C2010','#6A4820','#9A7030','#C8A848','#E0C878','#888','#444'],
-   mn:['James','Robert','David','Michael','William','Thomas','Gary','Dennis','Kevin','Brian','Scott','Mark','Larry','Jerry','Richard','Donald','Kenneth','Steven','Edward','Ronald'],
-   fn:['Linda','Patricia','Barbara','Susan','Karen','Nancy','Lisa','Betty','Ashley','Kimberly','Carol','Michelle','Amanda','Melissa','Laura','Sarah','Deborah','Sharon','Cynthia','Janet']},
-  {id:'black',w:13,
-   skin:['#2E1608','#4A2410','#6A3820','#8A5030','#5A3018','#3A2010'],
-   hairC:['#120600','#0A0300','#1C0A02'],
-   mn:['Marcus','Darius','DeShawn','Jaylen','Malik','Terrell','Andre','Jerome','Reggie','Curtis','Antoine','Derrick','Calvin','Floyd','Leroy','Bernard','Ernest','Otis','Wendell','Clarence'],
-   fn:['Aaliyah','Keisha','Tamara','Latasha','Monique','Denise','Shanice','Tiffany','Ebony','Jasmine','Vanessa','Crystal','Tanya','Simone','Alicia','Darlene','Yvette','Regina','Cheryl','Brenda']},
-  {id:'hispanic',w:18,
-   skin:['#C07038','#A86030','#986028','#D08848','#B87040','#D89858'],
-   hairC:['#160600','#240C04','#301408','#0E0300'],
-   mn:['Carlos','Jose','Miguel','Juan','Luis','Antonio','Roberto','Fernando','Eduardo','Ricardo','Manuel','Pedro','Jorge','Alberto','Rafael','Hector','Ernesto','Armando','Gerardo','Alejandro'],
-   fn:['Maria','Carmen','Rosa','Ana','Elena','Lucia','Gloria','Guadalupe','Patricia','Cristina','Veronica','Monica','Adriana','Claudia','Yolanda','Graciela','Leticia','Diana','Esperanza','Sandra']},
-  {id:'asian',w:7,
-   skin:['#E8BE78','#D8A860','#C89850','#F0CE88','#E0B868'],
-   hairC:['#060200','#0C0400','#080300'],
-   mn:['Wei','Jin','Hyun','Min','Kenji','Hiroshi','Nguyen','Thanh','Ravi','Raj','Mohammed','Ali','Hassan','Karim','Takeshi','Minh','Vijay','Sanjay','Arjun','Omar'],
-   fn:['Li','Mei','Yuki','Hana','Anh','Thu','Priya','Anita','Fatima','Aisha','Layla','Sara','Kim','Jing','Yuna','Mia','Nadia','Zara','Rina','Sakura']},
+  {id:'white',w:62,skin:['#F5C9A0','#EDBA82','#E5A870','#D89060','#C87850'],hairC:['#1C0E08','#3C2010','#6A4820','#9A7030','#C8A848','#E0C878','#888','#333'],mn:['James','Robert','David','Michael','William','Thomas','Gary','Dennis','Kevin','Brian','Scott','Mark','Larry','Jerry','Richard'],fn:['Linda','Patricia','Barbara','Susan','Karen','Nancy','Lisa','Betty','Ashley','Kimberly','Carol','Michelle','Amanda','Melissa','Laura']},
+  {id:'black',w:13,skin:['#2E1608','#4A2410','#6A3820','#8A5030','#5A3018','#3A2010'],hairC:['#120600','#0A0300','#1C0A02'],mn:['Marcus','Darius','DeShawn','Jaylen','Malik','Terrell','Andre','Jerome','Reggie','Curtis','Antoine','Derrick','Calvin','Floyd','Leroy'],fn:['Aaliyah','Keisha','Tamara','Latasha','Monique','Denise','Shanice','Tiffany','Ebony','Jasmine','Vanessa','Crystal','Tanya','Simone','Alicia']},
+  {id:'hispanic',w:18,skin:['#C07038','#A86030','#986028','#D08848','#B87040','#D89858'],hairC:['#160600','#240C04','#301408','#0E0300'],mn:['Carlos','Jose','Miguel','Juan','Luis','Antonio','Roberto','Fernando','Eduardo','Ricardo','Manuel','Pedro','Jorge','Alberto','Rafael'],fn:['Maria','Carmen','Rosa','Ana','Elena','Lucia','Gloria','Guadalupe','Patricia','Cristina','Veronica','Monica','Adriana','Claudia','Yolanda']},
+  {id:'asian',w:7,skin:['#E8BE78','#D8A860','#C89850','#F0CE88','#E0B868'],hairC:['#060200','#0C0400','#080300'],mn:['Wei','Jin','Hyun','Min','Kenji','Hiroshi','Nguyen','Thanh','Ravi','Raj','Mohammed','Ali','Hassan','Takeshi','Minh'],fn:['Li','Mei','Yuki','Hana','Anh','Thu','Priya','Anita','Fatima','Aisha','Layla','Sara','Kim','Jing','Yuna']},
 ];
-const LNAMES={
-  white:['Smith','Johnson','Williams','Brown','Jones','Miller','Davis','Wilson','Anderson','Taylor','Thomas','Harris','Martin','Robinson','Clark','Lewis','Walker','Hall','Allen','Young'],
-  black:['Washington','Jefferson','Williams','Robinson','Jackson','Brown','Davis','Harris','Thompson','Johnson','Martin','Anderson','Wilson','Thomas','Lewis','Walker','Hall','Allen','King','Moore'],
-  hispanic:['Garcia','Martinez','Rodriguez','Lopez','Gonzalez','Hernandez','Perez','Torres','Ramirez','Flores','Rivera','Morales','Ortiz','Gutierrez','Chavez','Ramos','Santos','Reyes','Cruz','Medina'],
-  asian:['Nguyen','Kim','Lee','Park','Wang','Chen','Zhang','Patel','Singh','Sharma','Kumar','Tanaka','Ali','Hassan','Khan','Yamamoto','Suzuki','Huang','Wu','Liu']
-};
+const LNAMES={white:['Smith','Johnson','Williams','Brown','Jones','Miller','Davis','Wilson','Anderson','Taylor','Thomas','Harris','Martin','Robinson','Clark'],black:['Washington','Jefferson','Williams','Robinson','Jackson','Brown','Davis','Harris','Thompson','Johnson','Martin','Anderson','Wilson','Thomas','Lewis'],hispanic:['Garcia','Martinez','Rodriguez','Lopez','Gonzalez','Hernandez','Perez','Torres','Ramirez','Flores','Rivera','Morales','Ortiz','Chavez','Ramos'],asian:['Nguyen','Kim','Lee','Park','Wang','Chen','Zhang','Patel','Singh','Sharma','Kumar','Tanaka','Ali','Hassan','Khan']};
 
-// Head shapes: control how face outline is drawn
-// Using simpler, more human-proportioned shapes
+// Head shapes: [widthRatio, heightRatio, jawWidthRatio, jawRoundness]
+// All ratios relative to the face block size
 const SHAPES=[
-  {n:'oval',    rx:0.38, ry:0.50, jw:0.30, jr:1.0,  cd:0.04},
-  {n:'round',   rx:0.42, ry:0.44, jw:0.38, jr:1.0,  cd:0.02},
-  {n:'square',  rx:0.40, ry:0.47, jw:0.38, jr:0.15, cd:0.02},
-  {n:'rect',    rx:0.34, ry:0.53, jw:0.32, jr:0.12, cd:0.02},
-  {n:'heart',   rx:0.41, ry:0.46, jw:0.20, jr:0.95, cd:0.06},
-  {n:'diamond', rx:0.36, ry:0.49, jw:0.20, jr:0.65, cd:0.06},
-  {n:'oblong',  rx:0.32, ry:0.54, jw:0.26, jr:0.88, cd:0.04},
-  {n:'wide',    rx:0.44, ry:0.42, jw:0.36, jr:0.75, cd:0.03},
+  {n:'oval',    rx:0.42,ry:1.00,jw:0.32,jr:1.0},
+  {n:'round',   rx:0.48,ry:0.88,jw:0.40,jr:1.0},
+  {n:'square',  rx:0.44,ry:0.94,jw:0.42,jr:0.1},
+  {n:'rect',    rx:0.36,ry:1.08,jw:0.34,jr:0.1},
+  {n:'heart',   rx:0.46,ry:0.92,jw:0.18,jr:1.0},
+  {n:'diamond', rx:0.38,ry:0.98,jw:0.20,jr:0.6},
+  {n:'oblong',  rx:0.32,ry:1.12,jw:0.26,jr:0.9},
+  {n:'wide',    rx:0.50,ry:0.84,jw:0.40,jr:0.8},
 ];
 
 function sr(seed,n){
-  let x=(seed*1000+n)^(n*2654435761);
+  let x=((seed*1000+n)^(n*2654435761))>>>0;
   x=((x^(x>>>16))*0x45d9f3b)>>>0;
   x=((x^(x>>>16))*0x45d9f3b)>>>0;
   return((x^(x>>>16))>>>0)/4294967296;
 }
-function rp(a,s,n){return a[Math.floor(sr(s,n)*a.length)]||a[0]}
+function rpi(a,s,n){return Math.floor(sr(s,n)*a.length)}
+function rp(a,s,n){return a[rpi(a,s,n)]||a[0]}
 function ri(a,b){return Math.floor(Math.random()*(b-a+1))+a}
-function dk(hex,p){
-  try{const n=parseInt(hex.slice(1),16);
-  return'#'+[((n>>16)&255),(( n>>8)&255),(n&255)].map(c=>Math.max(0,c-p*2.55|0).toString(16).padStart(2,'0')).join('')}
-  catch(e){return hex}
-}
-function lt(hex,p){
-  try{const n=parseInt(hex.slice(1),16);
-  return'#'+[((n>>16)&255),((n>>8)&255),(n&255)].map(c=>Math.min(255,c+p*2.55|0).toString(16).padStart(2,'0')).join('')}
-  catch(e){return hex}
-}
-function bl(h1,h2,t){
-  try{const n1=parseInt(h1.slice(1),16),n2=parseInt(h2.slice(1),16);
-  return'#'+[[(n1>>16)&255,(n2>>16)&255],[(n1>>8)&255,(n2>>8)&255],[n1&255,n2&255]]
-  .map(([a,b])=>(a*(1-t)+b*t|0).toString(16).padStart(2,'0')).join('')}
-  catch(e){return h1}
-}
-
-function pickEth(){
-  const t=ETH.reduce((s,e)=>s+e.w,0);let r=Math.random()*t;
-  for(const e of ETH){r-=e.w;if(r<=0)return e}return ETH[0];
-}
+function dk(hex,p){try{const n=parseInt(hex.slice(1),16);return'#'+[16,8,0].map(s=>Math.max(0,((n>>s)&255)-p*2.55|0).toString(16).padStart(2,'0')).join('')}catch(e){return hex}}
+function lt(hex,p){try{const n=parseInt(hex.slice(1),16);return'#'+[16,8,0].map(s=>Math.min(255,((n>>s)&255)+p*2.55|0).toString(16).padStart(2,'0')).join('')}catch(e){return hex}}
+function bl(h1,h2,t){try{const a=parseInt(h1.slice(1),16),b=parseInt(h2.slice(1),16);return'#'+[16,8,0].map(s=>(((a>>s)&255)*(1-t)+((b>>s)&255)*t|0).toString(16).padStart(2,'0')).join('')}catch(e){return h1}}
+function pickEth(){const t=ETH.reduce((s,e)=>s+e.w,0);let r=Math.random()*t;for(const e of ETH){r-=e.w;if(r<=0)return e}return ETH[0]}
 function makeDriver(forceShape){
   const eth=pickEth(),male=Math.random()>0.14;
   const exp=ri(0,25),age=21+exp+ri(0,5);
-  const seed=(Math.random()*1e7|0);
-  const hs=forceShape||SHAPES[Math.floor(Math.random()*SHAPES.length)];
-  return{name:`${rp(male?eth.mn:eth.fn,seed,1)} ${rp(LNAMES[eth.id],seed,2)}`,age,exp,male,eth:eth.id,skin:rp(eth.skin,seed,3),hair:rp(eth.hairC,seed,4),hs,seed};
+  const seed=Math.random()*1e7|0;
+  return{name:`${rp(male?eth.mn:eth.fn,seed,1)} ${rp(LNAMES[eth.id],seed,2)}`,age,exp,male,eth:eth.id,skin:rp(eth.skin,seed,3),hair:rp(eth.hairC,seed,4),hs:forceShape||SHAPES[Math.floor(Math.random()*SHAPES.length)],seed};
 }
 
 function portrait(d,S=120){
   const{skin,hair,male,age,eth,hs,seed}=d;
-  const r=n=>sr(seed,n);
+  const R=n=>sr(seed,n);
+
+  // Canvas is S×S circle
+  // Face block sits centered, with padding so background shows around it
+  // Face = tall oval, NOT filling the circle
   const cx=S/2, cy=S/2;
 
-  // ── FACIAL PROPORTION RULES ──
-  // Head occupies roughly 80% of canvas vertically
-  // Eyes at MIDPOINT of face height (crucial for human look)
-  // Forehead = 1/3 face, nose = 1/3 face, mouth-chin = 1/3 face
-  const faceH=S*0.80;
-  const faceTop=cy-faceH*0.50;   // top of skull
-  const faceBot=cy+faceH*0.50;   // chin
-  const fRx=S*hs.rx;              // half-width
-  const fRy=faceH*0.5;           // half-height
+  // Face dimensions - keep it narrow and tall, NOT filling circle
+  const faceW = S*0.52;  // face width (leaves padding left/right)
+  const faceH = faceW*(hs.ry/hs.rx)*0.9; // face height from shape ratio
+  const halfW = faceW*0.5;
+  const halfH = faceH*0.5;
 
-  // Key Y positions (thirds of face)
-  const browY= faceTop+faceH*0.33;   // brow line
-  const eyeY = faceTop+faceH*0.41;   // EYES at ~40% down (below halfway when hair included)
-  const noseBot=faceTop+faceH*0.63;  // bottom of nose
-  const mouthY=faceTop+faceH*0.74;   // mouth center
-  const chinY = faceBot;
+  // Position face: center of face slightly ABOVE center of canvas (hair takes top space)
+  const faceCX = cx;
+  const faceCY = cy + S*0.05; // slight down shift to fit hair above
 
-  // Jaw shape
-  const jawY=faceTop+faceH*0.72;
-  const jawW=S*hs.jw;
-  const jr=hs.jr;
+  // Key Y coordinates using rule of thirds
+  const faceTop = faceCY - halfH;
+  const faceBot = faceCY + halfH;
+  const eyeY    = faceTop + faceH*0.42;  // eyes just above midpoint
+  const browY   = eyeY - faceH*0.10;
+  const noseBot = faceTop + faceH*0.63;
+  const mouthY  = faceTop + faceH*0.76;
+  const chinY   = faceBot;
 
-  // Feature sizes (all relative to S)
-  const eyeUnit=S*0.065;  // reference eye width
-  const eyeW=eyeUnit*(0.9+r(7)*0.2);
-  const eyeH=eyeW*(eth==='asian'?0.42+r(71)*0.12:0.52+r(72)*0.18);
-  const eyeSep=eyeW*1.1; // one eye-width gap between eyes
-  const exL=cx-eyeSep-eyeW; // left eye center
-  const exR=cx+eyeSep+eyeW; // right eye center
-  const nW=S*(0.052+r(5)*0.028+(eth==='black'?0.010:eth==='hispanic'?0.006:0));
-  const mW=S*(0.080+r(8)*0.040);
-  const lipH=S*(0.014+r(9)*0.008+(eth==='black'?0.006:0));
+  const jawW = faceW*hs.jw;
+  const jr   = hs.jr;
 
-  const wrinkle=Math.max(0,(age-38)/26);
-  const bald=male&&age>46&&r(4)>0.55;
-  const hairStyle=male?(r(3)>0.65?'long':'short'):(r(3)>0.35?'long':'bun');
-  const hasFH=male&&r(1)>0.42;
-  const fhType=r(2)>0.5?'beard':(r(2)>0.28?'mustache':'stubble');
-  const glasses=r(13)>0.84;
-  const eyeColors={white:['#3A6888','#406040','#583028','#284868'],
-    black:['#281408','#180C04'],hispanic:['#281408','#301808'],asian:['#180800','#100600']};
-  const eyeC=eyeColors[eth]||['#281408'];
-  const eyeColor=eyeC[Math.floor(r(11)*eyeC.length)];
+  // Eye dimensions: eyes are small, 1/6 face width each
+  const eyeW = faceW*0.135;
+  const eyeH = eyeW*(eth==='asian'?0.40+R(71)*0.10:0.50+R(72)*0.18);
+  // Eyes separated by one eye-width: centers at ±(eyeW*1.1) from face center
+  const eyeSep = eyeW*1.15;
+  const exL = faceCX - eyeSep;
+  const exR = faceCX + eyeSep;
 
-  // Lip color
-  const lipC=eth==='black'?bl(skin,'#784048',0.45):bl(skin,'#C07080',0.32);
+  const nW = faceW*(0.090+R(5)*0.040+(eth==='black'?0.015:eth==='hispanic'?0.008:0));
+  const mW = faceW*(0.170+R(8)*0.070);
+  const lipH = faceW*(0.022+R(9)*0.012+(eth==='black'?0.008:0));
 
-  // Shirt color from seed
-  const shirtH=(seed*37)%360;
+  const wrinkle = Math.max(0,(age-38)/26);
+  const bald = male&&age>46&&R(4)>0.55;
+  const hairStyle = male?(R(3)>0.65?'long':'short'):(R(3)>0.35?'long':'bun');
+  const hasFH = male&&R(1)>0.42;
+  const fhType = R(2)>0.5?'beard':(R(2)>0.28?'mustache':'stubble');
+  const glasses = R(13)>0.84;
+
+  const eyeColors={white:['#3A6888','#406040','#583028','#284868'],black:['#281408','#180C04'],hispanic:['#281408','#301808'],asian:['#180800','#100600']};
+  const eyeC = (eyeColors[eth]||['#281408'])[Math.floor(R(11)*4)%((eyeColors[eth]||['#281408']).length)];
+  const lipC = eth==='black'?bl(skin,'#784048',0.45):bl(skin,'#C07080',0.32);
+
+  // Build face outline path
+  function facePath(){
+    const top=faceTop, bot=chinY;
+    const hw=halfW, jawHW=jawW;
+    const midY=faceCY+halfH*0.1;
+    if(jr>0.7){
+      return `M ${faceCX} ${top}
+        C ${faceCX+hw*0.55} ${top}, ${faceCX+hw} ${faceCY-halfH*0.25}, ${faceCX+hw} ${midY}
+        C ${faceCX+hw} ${faceCY+halfH*0.35}, ${faceCX+jawHW*1.1} ${bot-halfH*0.08*jr}, ${faceCX+jawHW*0.28} ${bot}
+        Q ${faceCX} ${bot+halfH*0.04} ${faceCX-jawHW*0.28} ${bot}
+        C ${faceCX-jawHW*1.1} ${bot-halfH*0.08*jr}, ${faceCX-hw} ${faceCY+halfH*0.35}, ${faceCX-hw} ${midY}
+        C ${faceCX-hw} ${faceCY-halfH*0.25}, ${faceCX-hw*0.55} ${top}, ${faceCX} ${top} Z`;
+    }else{
+      const jy=bot-halfH*0.12;
+      return `M ${faceCX} ${top}
+        C ${faceCX+hw*0.55} ${top}, ${faceCX+hw} ${faceCY-halfH*0.25}, ${faceCX+hw} ${midY}
+        L ${faceCX+hw*0.96} ${jy} L ${faceCX+jawHW} ${jy+halfH*0.08}
+        L ${faceCX+jawHW*0.55} ${bot} L ${faceCX-jawHW*0.55} ${bot}
+        L ${faceCX-jawHW} ${jy+halfH*0.08} L ${faceCX-hw*0.96} ${jy}
+        C ${faceCX-hw} ${faceCY-halfH*0.25}, ${faceCX-hw*0.55} ${top}, ${faceCX} ${top} Z`;
+    }
+  }
 
   let p=`<svg width="${S}" height="${S}" viewBox="0 0 ${S} ${S}" xmlns="http://www.w3.org/2000/svg">`;
-  p+=`<clipPath id="cp${seed}"><circle cx="${cx}" cy="${cy}" r="${S*0.499}"/></clipPath>`;
-  p+=`<circle cx="${cx}" cy="${cy}" r="${S*0.499}" fill="#111820"/>`;
-  p+=`<g clip-path="url(#cp${seed})">`;
 
-  // ── SHOULDERS ──
-  const shC=`hsl(${shirtH},30%,18%)`;
-  p+=`<ellipse cx="${cx}" cy="${S*0.96}" rx="${S*0.52}" ry="${S*0.20}" fill="${shC}"/>`;
-  // Collar
-  const neckW=S*(male?0.09:0.07);
-  const neckTop=chinY-S*0.01;
-  p+=`<rect x="${cx-neckW}" y="${neckTop}" width="${neckW*2}" height="${S*0.14}" fill="${skin}" rx="2"/>`;
-  p+=`<path d="M${cx-neckW*1.8} ${neckTop+S*0.1} L${cx-neckW} ${neckTop} L${cx} ${neckTop+S*0.07} L${cx+neckW} ${neckTop} L${cx+neckW*1.8} ${neckTop+S*0.1}" fill="${dk(shC,8)}" stroke="rgba(255,255,255,0.10)" stroke-width="0.8"/>`;
+  // BG gradient - subtle
+  p+=`<circle cx="${cx}" cy="${cy}" r="${S*0.499}" fill="#1a2235"/>`;
 
-  // ── HAIR BACK ──
+  // Shoulders/clothing - sits at bottom of circle
+  const shH=(seed*37)%360;
+  p+=`<ellipse cx="${cx}" cy="${S*0.94}" rx="${S*0.45}" ry="${S*0.18}" fill="hsl(${shH},32%,16%)"/>`;
+
+  // Neck
+  const nkW=S*(male?0.085:0.065);
+  p+=`<rect x="${cx-nkW}" y="${chinY-S*0.01}" width="${nkW*2}" height="${S*0.16}" rx="2" fill="${skin}"/>`;
+
+  // HAIR (behind face)
   if(!bald){
+    const hairTop = faceTop - faceH*(hairStyle==='long'?0.18:0.12);
     if(hairStyle==='long'){
-      p+=`<ellipse cx="${cx}" cy="${cy}" rx="${fRx*1.12}" ry="${fRy*1.08}" fill="${hair}"/>`;
+      p+=`<ellipse cx="${faceCX}" cy="${faceCY-halfH*0.1}" rx="${halfW*1.15}" ry="${halfH*1.22}" fill="${hair}"/>`;
     }else if(hairStyle==='bun'){
-      p+=`<ellipse cx="${cx}" cy="${cy}" rx="${fRx*1.06}" ry="${fRy*1.04}" fill="${hair}"/>`;
+      p+=`<ellipse cx="${faceCX}" cy="${faceCY-halfH*0.08}" rx="${halfW*1.10}" ry="${halfH*1.15}" fill="${hair}"/>`;
     }else{
-      // Short - only top
-      p+=`<ellipse cx="${cx}" cy="${faceTop+faceH*0.10}" rx="${fRx*1.04}" ry="${faceH*0.18}" fill="${hair}"/>`;
+      p+=`<ellipse cx="${faceCX}" cy="${faceTop+faceH*0.08}" rx="${halfW*1.08}" ry="${faceH*0.22}" fill="${hair}"/>`;
     }
   }
 
-  // ── EARS (sit at eye level, small and flush) ──
-  const earCY=eyeY+S*0.02;
-  const earW=S*0.038, earH=S*0.070;
-  const earX=fRx-earW*0.3; // flush with face edge
-  // Ear shape: ellipse with inner curve
+  // Ears — at eye level, small, flush with face edge
+  const earCY = eyeY+eyeH*0.5;
+  const earW2 = S*0.032, earH2 = S*0.060;
   [-1,1].forEach(side=>{
-    const ex2=cx+side*earX;
-    p+=`<ellipse cx="${ex2}" cy="${earCY}" rx="${earW}" ry="${earH}" fill="${skin}"/>`;
-    p+=`<path d="M${ex2-side*earW*0.1} ${earCY-earH*0.4} Q${ex2+side*earW*0.4} ${earCY} ${ex2-side*earW*0.1} ${earCY+earH*0.4}" stroke="${dk(skin,18)}" stroke-width="0.8" fill="none" opacity="0.6"/>`;
+    const ex2 = faceCX+side*(halfW-earW2*0.25);
+    p+=`<ellipse cx="${ex2}" cy="${earCY}" rx="${earW2}" ry="${earH2}" fill="${skin}"/>`;
+    p+=`<ellipse cx="${ex2-side*earW2*0.15}" cy="${earCY}" rx="${earW2*0.55}" ry="${earH2*0.58}" fill="${dk(skin,14)}"/>`;
   });
 
-  // ── FACE ──
-  let facePath;
-  if(jr>0.7){
-    facePath=`M ${cx} ${faceTop}
-      C ${cx+fRx*0.6} ${faceTop}, ${cx+fRx} ${faceTop+faceH*0.3}, ${cx+fRx} ${faceTop+faceH*0.5}
-      C ${cx+fRx} ${jawY}, ${cx+jawW*1.1} ${chinY-S*0.04*jr}, ${cx+jawW*0.3} ${chinY}
-      Q ${cx} ${chinY+S*hs.cd} ${cx-jawW*0.3} ${chinY}
-      C ${cx-jawW*1.1} ${chinY-S*0.04*jr}, ${cx-fRx} ${jawY}, ${cx-fRx} ${faceTop+faceH*0.5}
-      C ${cx-fRx} ${faceTop+faceH*0.3}, ${cx-fRx*0.6} ${faceTop}, ${cx} ${faceTop} Z`;
-  }else{
-    facePath=`M ${cx} ${faceTop}
-      C ${cx+fRx*0.6} ${faceTop}, ${cx+fRx} ${faceTop+faceH*0.3}, ${cx+fRx} ${faceTop+faceH*0.5}
-      L ${cx+fRx} ${jawY} L ${cx+jawW} ${jawY+S*0.04}
-      L ${cx+jawW*0.6} ${chinY} L ${cx-jawW*0.6} ${chinY}
-      L ${cx-jawW} ${jawY+S*0.04} L ${cx-fRx} ${jawY}
-      C ${cx-fRx} ${faceTop+faceH*0.3}, ${cx-fRx*0.6} ${faceTop}, ${cx} ${faceTop} Z`;
-  }
-  p+=`<path d="${facePath}" fill="${skin}"/>`;
+  // FACE
+  p+=`<path d="${facePath()}" fill="${skin}"/>`;
 
-  // ── FACE 3D SHADING ──
-  // Side shadows (give face depth)
-  p+=`<path d="${facePath}" fill="url(#sh${seed})" opacity="0.0"/>`;
-  // Left shadow
-  p+=`<ellipse cx="${cx-fRx*0.72}" cy="${cy}" rx="${fRx*0.32}" ry="${fRy*0.75}" fill="${dk(skin,12)}" opacity="0.35"/>`;
-  // Right shadow
-  p+=`<ellipse cx="${cx+fRx*0.72}" cy="${cy}" rx="${fRx*0.32}" ry="${fRy*0.75}" fill="${dk(skin,12)}" opacity="0.35"/>`;
-  // Forehead center highlight
-  p+=`<ellipse cx="${cx}" cy="${faceTop+faceH*0.18}" rx="${fRx*0.38}" ry="${faceH*0.12}" fill="${lt(skin,8)}" opacity="0.28"/>`;
-  // Cheek highlights
-  p+=`<ellipse cx="${cx-fRx*0.38}" cy="${eyeY+S*0.06}" rx="${fRx*0.22}" ry="${S*0.08}" fill="${lt(skin,10)}" opacity="0.22"/>`;
-  p+=`<ellipse cx="${cx+fRx*0.38}" cy="${eyeY+S*0.06}" rx="${fRx*0.22}" ry="${S*0.08}" fill="${lt(skin,10)}" opacity="0.22"/>`;
+  // Face shading - side shadows for 3D depth
+  p+=`<path d="${facePath()}" fill="url(#noop)" opacity="0"/>`;
+  // Left temple shadow
+  p+=`<ellipse cx="${faceCX-halfW*0.70}" cy="${faceCY-halfH*0.1}" rx="${halfW*0.28}" ry="${halfH*0.65}" fill="${dk(skin,10)}" opacity="0.38"/>`;
+  // Right temple shadow  
+  p+=`<ellipse cx="${faceCX+halfW*0.70}" cy="${faceCY-halfH*0.1}" rx="${halfW*0.28}" ry="${halfH*0.65}" fill="${dk(skin,10)}" opacity="0.38"/>`;
+  // Chin/jaw shadow
+  p+=`<ellipse cx="${faceCX}" cy="${chinY-halfH*0.06}" rx="${jawW*0.55}" ry="${halfH*0.06}" fill="${dk(skin,16)}" opacity="0.30"/>`;
+  // Forehead highlight
+  p+=`<ellipse cx="${faceCX}" cy="${faceTop+faceH*0.15}" rx="${halfW*0.36}" ry="${faceH*0.09}" fill="${lt(skin,10)}" opacity="0.25"/>`;
 
-  // ── HAIR FRONT ──
+  // HAIR front
   if(!bald){
     if(hairStyle==='long'){
-      p+=`<ellipse cx="${cx}" cy="${faceTop+S*0.04}" rx="${fRx*1.02}" ry="${faceH*0.17}" fill="${hair}"/>`;
-      // Side hair over temples
-      p+=`<ellipse cx="${cx-fRx*0.78}" cy="${faceTop+faceH*0.22}" rx="${fRx*0.14}" ry="${faceH*0.15}" fill="${hair}" opacity="0.9"/>`;
-      p+=`<ellipse cx="${cx+fRx*0.78}" cy="${faceTop+faceH*0.22}" rx="${fRx*0.14}" ry="${faceH*0.15}" fill="${hair}" opacity="0.9"/>`;
+      p+=`<ellipse cx="${faceCX}" cy="${faceTop+faceH*0.04}" rx="${halfW*1.05}" ry="${faceH*0.16}" fill="${hair}"/>`;
+      // Side falls
+      p+=`<ellipse cx="${faceCX-halfW*0.82}" cy="${faceCY-halfH*0.12}" rx="${halfW*0.16}" ry="${halfH*0.42}" fill="${hair}"/>`;
+      p+=`<ellipse cx="${faceCX+halfW*0.82}" cy="${faceCY-halfH*0.12}" rx="${halfW*0.16}" ry="${halfH*0.42}" fill="${hair}"/>`;
     }else if(hairStyle==='short'){
-      p+=`<ellipse cx="${cx}" cy="${faceTop+S*0.04}" rx="${fRx*1.0}" ry="${faceH*0.16}" fill="${hair}"/>`;
-      p+=`<ellipse cx="${cx-fRx*0.75}" cy="${faceTop+faceH*0.20}" rx="${fRx*0.18}" ry="${faceH*0.10}" fill="${hair}"/>`;
-      p+=`<ellipse cx="${cx+fRx*0.75}" cy="${faceTop+faceH*0.20}" rx="${fRx*0.18}" ry="${faceH*0.10}" fill="${hair}"/>`;
+      p+=`<ellipse cx="${faceCX}" cy="${faceTop+faceH*0.04}" rx="${halfW*1.02}" ry="${faceH*0.15}" fill="${hair}"/>`;
+      p+=`<ellipse cx="${faceCX-halfW*0.78}" cy="${faceTop+faceH*0.18}" rx="${halfW*0.18}" ry="${faceH*0.09}" fill="${hair}"/>`;
+      p+=`<ellipse cx="${faceCX+halfW*0.78}" cy="${faceTop+faceH*0.18}" rx="${halfW*0.18}" ry="${faceH*0.09}" fill="${hair}"/>`;
     }else if(hairStyle==='bun'){
-      p+=`<ellipse cx="${cx}" cy="${faceTop+S*0.04}" rx="${fRx*0.96}" ry="${faceH*0.15}" fill="${hair}"/>`;
-      p+=`<circle cx="${cx}" cy="${faceTop-S*0.04}" r="${S*0.07}" fill="${hair}"/>`;
-      p+=`<circle cx="${cx}" cy="${faceTop-S*0.04}" r="${S*0.045}" fill="${dk(hair,10)}"/>`;
+      p+=`<ellipse cx="${faceCX}" cy="${faceTop+faceH*0.04}" rx="${halfW*0.98}" ry="${faceH*0.14}" fill="${hair}"/>`;
+      p+=`<circle cx="${faceCX}" cy="${faceTop-faceH*0.05}" r="${S*0.07}" fill="${hair}"/>`;
     }
   }else{
-    // Bald reflection
-    p+=`<ellipse cx="${cx-S*0.05}" cy="${faceTop+S*0.12}" rx="${S*0.09}" ry="${S*0.05}" fill="${lt(skin,20)}" opacity="0.3"/>`;
+    p+=`<ellipse cx="${faceCX-halfW*0.12}" cy="${faceTop+faceH*0.10}" rx="${halfW*0.20}" ry="${faceH*0.06}" fill="${lt(skin,20)}" opacity="0.28"/>`;
   }
 
-  // ── EYEBROWS ──
-  const browThick=male?2.4:1.5;
-  const browArch=male?S*0.010:S*0.018;
-  const browHalfW=eyeW*1.15;
-  // Left brow (centered on left eye)
-  p+=`<path d="M${exL-browHalfW} ${browY+browArch*0.6} Q${exL} ${browY-browArch} ${exL+browHalfW} ${browY+browArch*0.2}" stroke="${hair}" stroke-width="${browThick}" fill="none" stroke-linecap="round"/>`;
-  // Right brow
-  p+=`<path d="M${exR-browHalfW} ${browY+browArch*0.2} Q${exR} ${browY-browArch} ${exR+browHalfW} ${browY+browArch*0.6}" stroke="${hair}" stroke-width="${browThick}" fill="none" stroke-linecap="round"/>`;
+  // EYEBROWS — thin, human proportion
+  const browThick = male?2.0:1.4;
+  const browArch = male?faceH*0.008:faceH*0.016;
+  const browHW = eyeW*1.10;
+  p+=`<path d="M${exL-browHW} ${browY+browArch*0.6} Q${exL} ${browY-browArch} ${exL+browHW} ${browY+browArch*0.2}" stroke="${hair}" stroke-width="${browThick}" fill="none" stroke-linecap="round"/>`;
+  p+=`<path d="M${exR-browHW} ${browY+browArch*0.2} Q${exR} ${browY-browArch} ${exR+browHW} ${browY+browArch*0.6}" stroke="${hair}" stroke-width="${browThick}" fill="none" stroke-linecap="round"/>`;
 
-  // ── WRINKLES ──
-  if(wrinkle>0.1){
-    const wa=Math.min(0.5,wrinkle*0.72);
-    const nl=Math.min(3,Math.ceil(wrinkle*3.5));
+  // WRINKLES
+  if(wrinkle>0.15){
+    const wa=Math.min(0.5,wrinkle*0.7);
+    const nl=Math.min(3,Math.ceil(wrinkle*3));
     for(let i=0;i<nl;i++){
-      const wy=browY-S*0.06-i*S*0.05;
-      const ww=fRx*(0.52-i*0.10);
-      p+=`<path d="M${cx-ww} ${wy} Q${cx} ${wy-S*0.01} ${cx+ww} ${wy}" stroke="${dk(skin,20)}" stroke-width="0.85" fill="none" opacity="${wa*(0.48-i*0.1)}"/>`;
+      const wy=browY-faceH*0.05-i*faceH*0.05;
+      p+=`<path d="M${faceCX-halfW*0.40+i*halfW*0.04} ${wy} Q${faceCX} ${wy-faceH*0.008} ${faceCX+halfW*0.40-i*halfW*0.04} ${wy}" stroke="${dk(skin,20)}" stroke-width="0.8" fill="none" opacity="${wa*(0.45-i*0.10)}"/>`;
     }
-    if(wrinkle>0.22){
-      // Glabellar (11 lines)
-      p+=`<line x1="${cx-S*0.028}" y1="${browY+S*0.005}" x2="${cx-S*0.032}" y2="${browY-S*0.05}" stroke="${dk(skin,18)}" stroke-width="0.8" opacity="${wa*0.44}"/>`;
-      p+=`<line x1="${cx+S*0.028}" y1="${browY+S*0.005}" x2="${cx+S*0.032}" y2="${browY-S*0.05}" stroke="${dk(skin,18)}" stroke-width="0.8" opacity="${wa*0.44}"/>`;
-    }
-    if(wrinkle>0.35){
-      // Crow's feet
-      [exL,exR].forEach((ex,i)=>{
-        const dir=i===0?-1:1;
-        p+=`<path d="M${ex+dir*eyeW} ${eyeY-S*0.01} L${ex+dir*(eyeW+S*0.038)} ${eyeY-S*0.025}" stroke="${dk(skin,16)}" stroke-width="0.75" fill="none" opacity="${wa*0.38}"/>`;
-        p+=`<path d="M${ex+dir*eyeW} ${eyeY+S*0.01} L${ex+dir*(eyeW+S*0.038)} ${eyeY+S*0.022}" stroke="${dk(skin,16)}" stroke-width="0.75" fill="none" opacity="${wa*0.35}"/>`;
-      });
-    }
-    if(wrinkle>0.28){
-      // Nasolabial folds
-      const nlX=nW*1.5;const nlY=noseBot-S*0.01;
-      p+=`<path d="M${cx-nlX} ${nlY} Q${cx-nlX*1.5} ${nlY+S*0.038} ${cx-nlX*1.2} ${nlY+S*0.09}" stroke="${dk(skin,16)}" stroke-width="0.9" fill="none" opacity="${wa*0.38}"/>`;
-      p+=`<path d="M${cx+nlX} ${nlY} Q${cx+nlX*1.5} ${nlY+S*0.038} ${cx+nlX*1.2} ${nlY+S*0.09}" stroke="${dk(skin,16)}" stroke-width="0.9" fill="none" opacity="${wa*0.38}"/>`;
+    if(wrinkle>0.3){
+      p+=`<path d="M${faceCX-halfW*0.35} ${eyeY+faceH*0.04} Q${faceCX-halfW*0.48} ${eyeY+faceH*0.07} ${faceCX-halfW*0.44} ${eyeY+faceH*0.12}" stroke="${dk(skin,15)}" stroke-width="0.7" fill="none" opacity="${wa*0.35}"/>`;
+      p+=`<path d="M${faceCX+halfW*0.35} ${eyeY+faceH*0.04} Q${faceCX+halfW*0.48} ${eyeY+faceH*0.07} ${faceCX+halfW*0.44} ${eyeY+faceH*0.12}" stroke="${dk(skin,15)}" stroke-width="0.7" fill="none" opacity="${wa*0.35}"/>`;
     }
   }
 
-  // ── EYES (centered on exL/exR) ──
+  // EYES — smaller, correct separation
   [exL,exR].forEach(ex=>{
-    // Eye socket shadow
-    p+=`<ellipse cx="${ex}" cy="${eyeY+eyeH*0.25}" rx="${eyeW*1.28}" ry="${eyeH*1.65}" fill="${dk(skin,16)}" opacity="0.40"/>`;
-    // Eyelid crease
-    p+=`<path d="M${ex-eyeW*1.0} ${eyeY-eyeH*0.5} Q${ex} ${eyeY-eyeH*1.55} ${ex+eyeW*1.0} ${eyeY-eyeH*0.5}" stroke="${dk(skin,22)}" stroke-width="0.7" fill="none" opacity="0.4"/>`;
-    // White (sclera) - slightly off-white
+    const side = ex<faceCX?-1:1;
+    // Socket shadow
+    p+=`<ellipse cx="${ex}" cy="${eyeY+eyeH*0.2}" rx="${eyeW*1.22}" ry="${eyeH*1.55}" fill="${dk(skin,14)}" opacity="0.36"/>`;
+    // Sclera
     p+=`<ellipse cx="${ex}" cy="${eyeY}" rx="${eyeW}" ry="${eyeH}" fill="#EDE5D8"/>`;
-    // Iris
-    const ir=Math.min(eyeW*0.82,eyeH*1.1);
-    p+=`<circle cx="${ex}" cy="${eyeY}" r="${ir}" fill="${eyeColor}"/>`;
-    // Darker iris rim
-    p+=`<circle cx="${ex}" cy="${eyeY}" r="${ir}" fill="none" stroke="${dk(eyeColor,20)}" stroke-width="0.8"/>`;
+    // Iris (clipped to stay in sclera)
+    const ir=Math.min(eyeW*0.80,eyeH*1.05);
+    p+=`<circle cx="${ex}" cy="${eyeY}" r="${ir}" fill="${eyeC}"/>`;
+    p+=`<circle cx="${ex}" cy="${eyeY}" r="${ir}" fill="none" stroke="${dk(eyeC,18)}" stroke-width="0.7"/>`;
     // Pupil
-    p+=`<circle cx="${ex}" cy="${eyeY}" r="${ir*0.52}" fill="#0C0600"/>`;
-    // Catchlight (two small: one large, one tiny)
-    p+=`<ellipse cx="${ex+ir*0.28}" cy="${eyeY-ir*0.32}" rx="${ir*0.18}" ry="${ir*0.16}" fill="white" opacity="0.92"/>`;
-    p+=`<circle cx="${ex-ir*0.22}" cy="${eyeY+ir*0.28}" r="${ir*0.07}" fill="white" opacity="0.55"/>`;
-    // Upper lash line
-    p+=`<path d="M${ex-eyeW*0.98} ${eyeY-eyeH*0.08} Q${ex} ${eyeY-eyeH*1.45} ${ex+eyeW*0.98} ${eyeY-eyeH*0.08}" stroke="#120800" stroke-width="${male?1.4:2.1}" fill="none"/>`;
+    p+=`<circle cx="${ex}" cy="${eyeY}" r="${ir*0.50}" fill="#080400"/>`;
+    // Catchlight
+    p+=`<ellipse cx="${ex+ir*0.28}" cy="${eyeY-ir*0.30}" rx="${ir*0.16}" ry="${ir*0.14}" fill="white" opacity="0.90"/>`;
+    // Upper lash
+    p+=`<path d="M${ex-eyeW*0.96} ${eyeY-eyeH*0.06} Q${ex} ${eyeY-eyeH*1.42} ${ex+eyeW*0.96} ${eyeY-eyeH*0.06}" stroke="#120800" stroke-width="${male?1.3:1.9}" fill="none"/>`;
     // Lower lash
-    p+=`<path d="M${ex-eyeW*0.85} ${eyeY+eyeH*0.35} Q${ex} ${eyeY+eyeH*0.92} ${ex+eyeW*0.85} ${eyeY+eyeH*0.35}" stroke="${dk(skin,30)}" stroke-width="0.65" fill="none" opacity="0.48"/>`;
+    p+=`<path d="M${ex-eyeW*0.82} ${eyeY+eyeH*0.32} Q${ex} ${eyeY+eyeH*0.88} ${ex+eyeW*0.82} ${eyeY+eyeH*0.32}" stroke="${dk(skin,28)}" stroke-width="0.6" fill="none" opacity="0.44"/>`;
   });
 
-  // ── GLASSES ──
+  // GLASSES
   if(glasses){
-    const gpad=S*0.02;
-    const gR=eyeW+gpad;const gY=eyeY;
-    const frameC=r(14)>0.5?'#2a2a2a':'#8B6914';
-    p+=`<circle cx="${exL}" cy="${gY}" r="${gR}" fill="none" stroke="${frameC}" stroke-width="1.6" opacity="0.85"/>`;
-    p+=`<circle cx="${exR}" cy="${gY}" r="${gR}" fill="none" stroke="${frameC}" stroke-width="1.6" opacity="0.85"/>`;
-    p+=`<line x1="${exL+gR}" y1="${gY}" x2="${exR-gR}" y2="${gY}" stroke="${frameC}" stroke-width="1.3" opacity="0.85"/>`;
-    p+=`<line x1="${exL-gR}" y1="${gY}" x2="${cx-fRx*0.88}" y2="${gY+S*0.01}" stroke="${frameC}" stroke-width="1.3" opacity="0.85"/>`;
-    p+=`<line x1="${exR+gR}" y1="${gY}" x2="${cx+fRx*0.88}" y2="${gY+S*0.01}" stroke="${frameC}" stroke-width="1.3" opacity="0.85"/>`;
+    const gR=eyeW+S*0.016;
+    const gC=R(14)>0.5?'#282828':'#6A5010';
+    p+=`<circle cx="${exL}" cy="${eyeY}" r="${gR}" fill="none" stroke="${gC}" stroke-width="1.5" opacity="0.82"/>`;
+    p+=`<circle cx="${exR}" cy="${eyeY}" r="${gR}" fill="none" stroke="${gC}" stroke-width="1.5" opacity="0.82"/>`;
+    p+=`<line x1="${exL+gR}" y1="${eyeY}" x2="${exR-gR}" y2="${eyeY}" stroke="${gC}" stroke-width="1.2" opacity="0.82"/>`;
+    p+=`<line x1="${exL-gR}" y1="${eyeY}" x2="${faceCX-halfW*0.88}" y2="${eyeY+S*0.008}" stroke="${gC}" stroke-width="1.2" opacity="0.82"/>`;
+    p+=`<line x1="${exR+gR}" y1="${eyeY}" x2="${faceCX+halfW*0.88}" y2="${eyeY+S*0.008}" stroke="${gC}" stroke-width="1.2" opacity="0.82"/>`;
   }
 
-  // ── NOSE ──
-  // More subtle - suggest shape rather than overdraw
-  const noseTopY=eyeY+eyeH+S*0.02;
-  // Bridge (very subtle lines from inner eye corners going down)
-  p+=`<path d="M${cx-S*0.026} ${noseTopY} Q${cx-nW*0.55} ${noseBot-S*0.04} ${cx-nW*0.68} ${noseBot}" stroke="${dk(skin,18)}" stroke-width="0.85" fill="none" opacity="0.45"/>`;
-  p+=`<path d="M${cx+S*0.026} ${noseTopY} Q${cx+nW*0.55} ${noseBot-S*0.04} ${cx+nW*0.68} ${noseBot}" stroke="${dk(skin,18)}" stroke-width="0.85" fill="none" opacity="0.45"/>`;
-  // Nostril wings (subtle shadow shapes)
-  p+=`<ellipse cx="${cx-nW*0.78}" cy="${noseBot+S*0.008}" rx="${nW*0.58}" ry="${nW*0.26}" fill="${dk(skin,20)}" opacity="0.58"/>`;
-  p+=`<ellipse cx="${cx+nW*0.78}" cy="${noseBot+S*0.008}" rx="${nW*0.58}" ry="${nW*0.26}" fill="${dk(skin,20)}" opacity="0.58"/>`;
-  // Nose tip (soft shadow)
-  p+=`<ellipse cx="${cx}" cy="${noseBot}" rx="${nW*0.60}" ry="${nW*0.32}" fill="${dk(skin,10)}" opacity="0.42"/>`;
-  // Nostril holes
-  p+=`<ellipse cx="${cx-nW*0.55}" cy="${noseBot+S*0.005}" rx="${nW*0.22}" ry="${nW*0.14}" fill="${dk(skin,38)}" opacity="0.65"/>`;
-  p+=`<ellipse cx="${cx+nW*0.55}" cy="${noseBot+S*0.005}" rx="${nW*0.22}" ry="${nW*0.14}" fill="${dk(skin,38)}" opacity="0.65"/>`;
+  // NOSE — purely shadows, no drawn lines
+  const nbX=nW*0.72;
+  // Nostril shadows
+  p+=`<ellipse cx="${faceCX-nbX}" cy="${noseBot+S*0.004}" rx="${nW*0.50}" ry="${nW*0.23}" fill="${dk(skin,22)}" opacity="0.55"/>`;
+  p+=`<ellipse cx="${faceCX+nbX}" cy="${noseBot+S*0.004}" rx="${nW*0.50}" ry="${nW*0.23}" fill="${dk(skin,22)}" opacity="0.55"/>`;
+  // Tip shadow
+  p+=`<ellipse cx="${faceCX}" cy="${noseBot-nW*0.05}" rx="${nW*0.55}" ry="${nW*0.28}" fill="${dk(skin,10)}" opacity="0.38"/>`;
+  // Nostril holes (very subtle)
+  p+=`<ellipse cx="${faceCX-nW*0.50}" cy="${noseBot+S*0.002}" rx="${nW*0.20}" ry="${nW*0.12}" fill="${dk(skin,40)}" opacity="0.55"/>`;
+  p+=`<ellipse cx="${faceCX+nW*0.50}" cy="${noseBot+S*0.002}" rx="${nW*0.20}" ry="${nW*0.12}" fill="${dk(skin,40)}" opacity="0.55"/>`;
+  // Very faint bridge lines (from inner corners of eyes)
+  p+=`<path d="M${faceCX-eyeW*0.3} ${eyeY+eyeH} Q${faceCX-nW*0.52} ${noseBot-faceH*0.05} ${faceCX-nbX*0.9} ${noseBot}" stroke="${dk(skin,14)}" stroke-width="0.75" fill="none" opacity="0.32"/>`;
+  p+=`<path d="M${faceCX+eyeW*0.3} ${eyeY+eyeH} Q${faceCX+nW*0.52} ${noseBot-faceH*0.05} ${faceCX+nbX*0.9} ${noseBot}" stroke="${dk(skin,14)}" stroke-width="0.75" fill="none" opacity="0.32"/>`;
 
-  // ── MOUTH ──
-  const mouthPeak=S*0.014;
-  // Philtrum (groove above lip center)
-  p+=`<path d="M${cx-S*0.020} ${noseBot+S*0.01} L${cx-S*0.009} ${mouthY-mouthPeak-S*0.004}" stroke="${dk(skin,14)}" stroke-width="0.75" fill="none" opacity="0.38"/>`;
-  p+=`<path d="M${cx+S*0.020} ${noseBot+S*0.01} L${cx+S*0.009} ${mouthY-mouthPeak-S*0.004}" stroke="${dk(skin,14)}" stroke-width="0.75" fill="none" opacity="0.38"/>`;
+  // MOUTH
+  const mouthPk=faceH*0.016;
+  const lipColor=lipC;
+  // Philtrum
+  p+=`<path d="M${faceCX-nW*0.22} ${noseBot+S*0.005} L${faceCX-S*0.008} ${mouthY-mouthPk}" stroke="${dk(skin,12)}" stroke-width="0.7" fill="none" opacity="0.35"/>`;
+  p+=`<path d="M${faceCX+nW*0.22} ${noseBot+S*0.005} L${faceCX+S*0.008} ${mouthY-mouthPk}" stroke="${dk(skin,12)}" stroke-width="0.7" fill="none" opacity="0.35"/>`;
   // Upper lip
-  p+=`<path d="M${cx-mW} ${mouthY} Q${cx-mW*0.52} ${mouthY-lipH*0.5} ${cx-mW*0.18} ${mouthY-mouthPeak*0.5} Q${cx} ${mouthY-mouthPeak} ${cx+mW*0.18} ${mouthY-mouthPeak*0.5} Q${cx+mW*0.52} ${mouthY-lipH*0.5} ${cx+mW} ${mouthY}" fill="${lipC}" stroke="${dk(lipC,12)}" stroke-width="0.8"/>`;
+  p+=`<path d="M${faceCX-mW} ${mouthY} Q${faceCX-mW*0.52} ${mouthY-lipH*0.45} ${faceCX-mW*0.18} ${mouthY-mouthPk*0.45} Q${faceCX} ${mouthY-mouthPk} ${faceCX+mW*0.18} ${mouthY-mouthPk*0.45} Q${faceCX+mW*0.52} ${mouthY-lipH*0.45} ${faceCX+mW} ${mouthY}" fill="${lipColor}" stroke="${dk(lipColor,10)}" stroke-width="0.7"/>`;
   // Lower lip
-  p+=`<path d="M${cx-mW} ${mouthY} Q${cx-mW*0.3} ${mouthY+lipH*2.4} ${cx} ${mouthY+lipH*2.6} Q${cx+mW*0.3} ${mouthY+lipH*2.4} ${cx+mW} ${mouthY}" fill="${bl(lipC,skin,0.28)}" stroke="${dk(lipC,12)}" stroke-width="0.8"/>`;
-  // Mouth line
-  p+=`<path d="M${cx-mW*0.88} ${mouthY} Q${cx} ${mouthY+lipH*0.55} ${cx+mW*0.88} ${mouthY}" stroke="${dk(lipC,26)}" stroke-width="0.95" fill="none"/>`;
+  p+=`<path d="M${faceCX-mW} ${mouthY} Q${faceCX-mW*0.28} ${mouthY+lipH*2.3} ${faceCX} ${mouthY+lipH*2.5} Q${faceCX+mW*0.28} ${mouthY+lipH*2.3} ${faceCX+mW} ${mouthY}" fill="${bl(lipColor,skin,0.30)}" stroke="${dk(lipColor,10)}" stroke-width="0.7"/>`;
+  // Center line
+  p+=`<path d="M${faceCX-mW*0.86} ${mouthY} Q${faceCX} ${mouthY+lipH*0.5} ${faceCX+mW*0.86} ${mouthY}" stroke="${dk(lipColor,24)}" stroke-width="0.85" fill="none"/>`;
   // Corner dimples
-  p+=`<circle cx="${cx-mW*0.92}" cy="${mouthY+S*0.003}" r="1.2" fill="${dk(skin,20)}" opacity="0.5"/>`;
-  p+=`<circle cx="${cx+mW*0.92}" cy="${mouthY+S*0.003}" r="1.2" fill="${dk(skin,20)}" opacity="0.5"/>`;
+  p+=`<circle cx="${faceCX-mW*0.90}" cy="${mouthY+S*0.003}" r="1.1" fill="${dk(skin,18)}" opacity="0.45"/>`;
+  p+=`<circle cx="${faceCX+mW*0.90}" cy="${mouthY+S*0.003}" r="1.1" fill="${dk(skin,18)}" opacity="0.45"/>`;
 
-  // ── FACIAL HAIR ──
+  // FACIAL HAIR
   if(hasFH){
     const fhC=dk(hair,0);
     if(fhType==='beard'){
-      const bY=mouthY-S*0.01;
-      p+=`<path d="M${cx-mW*1.15} ${bY} C${cx-mW*1.3} ${bY+S*0.04} ${cx-jawW*1.0} ${chinY-S*0.06} ${cx-jawW*0.35} ${chinY+S*0.01} Q${cx} ${chinY+S*0.05} ${cx+jawW*0.35} ${chinY+S*0.01} C${cx+jawW*1.0} ${chinY-S*0.06} ${cx+mW*1.3} ${bY+S*0.04} ${cx+mW*1.15} ${bY} Z" fill="${fhC}" opacity="0.72"/>`;
-      p+=`<path d="M${cx-mW*1.1} ${bY} Q${cx-mW*0.5} ${bY-S*0.036} ${cx} ${bY-S*0.020} Q${cx+mW*0.5} ${bY-S*0.036} ${cx+mW*1.1} ${bY}" stroke="${fhC}" stroke-width="4.0" fill="none" stroke-linecap="round" opacity="0.82"/>`;
+      p+=`<path d="M${faceCX-mW*1.12} ${mouthY+S*0.008} C${faceCX-mW*1.3} ${mouthY+faceH*0.06} ${faceCX-jawW*1.0} ${chinY-faceH*0.06} ${faceCX-jawW*0.32} ${chinY} Q${faceCX} ${chinY+faceH*0.04} ${faceCX+jawW*0.32} ${chinY} C${faceCX+jawW*1.0} ${chinY-faceH*0.06} ${faceCX+mW*1.3} ${mouthY+faceH*0.06} ${faceCX+mW*1.12} ${mouthY+S*0.008} Z" fill="${fhC}" opacity="0.70"/>`;
+      p+=`<path d="M${faceCX-mW*1.08} ${mouthY-S*0.014} Q${faceCX-mW*0.5} ${mouthY-S*0.036} ${faceCX} ${mouthY-S*0.020} Q${faceCX+mW*0.5} ${mouthY-S*0.036} ${faceCX+mW*1.08} ${mouthY-S*0.014}" stroke="${fhC}" stroke-width="3.8" fill="none" stroke-linecap="round" opacity="0.80"/>`;
     }else if(fhType==='mustache'){
-      p+=`<path d="M${cx-mW*1.08} ${mouthY-S*0.016} Q${cx-mW*0.52} ${mouthY-S*0.042} ${cx} ${mouthY-S*0.024} Q${cx+mW*0.52} ${mouthY-S*0.042} ${cx+mW*1.08} ${mouthY-S*0.016}" stroke="${fhC}" stroke-width="4.5" fill="none" stroke-linecap="round" opacity="0.80"/>`;
+      p+=`<path d="M${faceCX-mW*1.06} ${mouthY-S*0.015} Q${faceCX-mW*0.5} ${mouthY-S*0.040} ${faceCX} ${mouthY-S*0.022} Q${faceCX+mW*0.5} ${mouthY-S*0.040} ${faceCX+mW*1.06} ${mouthY-S*0.015}" stroke="${fhC}" stroke-width="4.0" fill="none" stroke-linecap="round" opacity="0.78"/>`;
     }else{
-      // Stubble dots
-      for(let i=0;i<30;i++){
-        const sx=cx+(r(10+i)-0.5)*jawW*2.0;
-        const sy=mouthY+S*(0.01+r(30+i)*0.14);
-        const inFace=sy<chinY+S*0.02&&Math.abs(sx-cx)<Math.max(jawW,S*0.15)*1.2;
-        if(inFace)p+=`<circle cx="${sx.toFixed(1)}" cy="${sy.toFixed(1)}" r="${(0.7+r(50+i)*0.55).toFixed(1)}" fill="${fhC}" opacity="${(0.30+r(60+i)*0.32).toFixed(2)}"/>`;
+      for(let i=0;i<26;i++){
+        const sx=faceCX+(R(10+i)-0.5)*jawW*2.0;
+        const sy=mouthY+faceH*(0.01+R(30+i)*0.13);
+        const inFace=sy<chinY+faceH*0.02&&Math.abs(sx-faceCX)<Math.max(jawW,faceW*0.18)*1.1;
+        if(inFace)p+=`<circle cx="${sx.toFixed(1)}" cy="${sy.toFixed(1)}" r="${(0.7+R(50+i)*0.5).toFixed(1)}" fill="${fhC}" opacity="${(0.28+R(60+i)*0.28).toFixed(2)}"/>`;
       }
-      for(let i=0;i<10;i++){
-        const sx=cx+(r(70+i)-0.5)*mW*1.8;
-        p+=`<circle cx="${sx.toFixed(1)}" cy="${(mouthY-S*(0.006+r(80+i)*0.022)).toFixed(1)}" r="0.75" fill="${fhC}" opacity="0.38"/>`;
+      for(let i=0;i<9;i++){
+        const sx=faceCX+(R(70+i)-0.5)*mW*1.7;
+        p+=`<circle cx="${sx.toFixed(1)}" cy="${(mouthY-faceH*(0.005+R(80+i)*0.020)).toFixed(1)}" r="0.7" fill="${fhC}" opacity="0.35"/>`;
       }
     }
   }
 
-  p+=`</g></svg>`;
+  p+=`</svg>`;
   return p;
 }
 
