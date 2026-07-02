@@ -24,10 +24,26 @@ button:hover{background:#00cff7}
 <button onclick="onePerShape()">One Per Head Shape</button>
 <script>
 const ETH=[
-  {id:'white',w:62,skin:['#F5C9A0','#EDBA82','#E5A870','#D89060','#C87850'],hairC:['#1C0E08','#3C2010','#6A4820','#9A7030','#C8A848','#E0C878','#888','#333'],mn:['James','Robert','David','Michael','William','Thomas','Gary','Dennis','Kevin','Brian','Scott','Mark','Larry','Jerry','Richard'],fn:['Linda','Patricia','Barbara','Susan','Karen','Nancy','Lisa','Betty','Ashley','Kimberly','Carol','Michelle','Amanda','Melissa','Laura']},
-  {id:'black',w:13,skin:['#2E1608','#4A2410','#6A3820','#8A5030','#5A3018','#3A2010'],hairC:['#120600','#0A0300','#1C0A02'],mn:['Marcus','Darius','DeShawn','Jaylen','Malik','Terrell','Andre','Jerome','Reggie','Curtis','Antoine','Derrick','Calvin','Floyd','Leroy'],fn:['Aaliyah','Keisha','Tamara','Latasha','Monique','Denise','Shanice','Tiffany','Ebony','Jasmine','Vanessa','Crystal','Tanya','Simone','Alicia']},
-  {id:'hispanic',w:18,skin:['#C07038','#A86030','#986028','#D08848','#B87040','#D89858'],hairC:['#160600','#240C04','#301408','#0E0300'],mn:['Carlos','Jose','Miguel','Juan','Luis','Antonio','Roberto','Fernando','Eduardo','Ricardo','Manuel','Pedro','Jorge','Alberto','Rafael'],fn:['Maria','Carmen','Rosa','Ana','Elena','Lucia','Gloria','Guadalupe','Patricia','Cristina','Veronica','Monica','Adriana','Claudia','Yolanda']},
-  {id:'asian',w:7,skin:['#E8BE78','#D8A860','#C89850','#F0CE88','#E0B868'],hairC:['#060200','#0C0400','#080300'],mn:['Wei','Jin','Hyun','Min','Kenji','Hiroshi','Nguyen','Thanh','Ravi','Raj','Mohammed','Ali','Hassan','Takeshi','Minh'],fn:['Li','Mei','Yuki','Hana','Anh','Thu','Priya','Anita','Fatima','Aisha','Layla','Sara','Kim','Jing','Yuna']},
+  {id:'white',w:62,
+   skin:['#FCCFAA','#F0B882','#E8A870','#D89060','#C87A50','#F5C090'],
+   hairC:['#1C0E08','#3C2010','#6A4820','#9A7030','#C8A848','#E8D080','#888','#333','#1A1A1A'],
+   mn:['James','Robert','David','Michael','William','Thomas','Gary','Dennis','Kevin','Brian','Scott','Mark','Larry','Jerry','Richard'],
+   fn:['Linda','Patricia','Barbara','Susan','Karen','Nancy','Lisa','Betty','Ashley','Kimberly','Carol','Michelle','Amanda','Melissa','Laura']},
+  {id:'black',w:13,
+   skin:['#3D1C0A','#5C2E14','#7A4020','#6B3518','#4A2410','#8A5530','#2A1206','#9A6038'],
+   hairC:['#100400','#080200','#180600'],
+   mn:['Marcus','Darius','DeShawn','Jaylen','Malik','Terrell','Andre','Jerome','Reggie','Curtis','Antoine','Derrick','Calvin','Floyd','Leroy'],
+   fn:['Aaliyah','Keisha','Tamara','Latasha','Monique','Denise','Shanice','Tiffany','Ebony','Jasmine','Vanessa','Crystal','Tanya','Simone','Alicia']},
+  {id:'hispanic',w:18,
+   skin:['#C87838','#B06830','#A05828','#D89050','#BE7840','#CA8848'],
+   hairC:['#160600','#220A04','#2C1206','#0C0200'],
+   mn:['Carlos','Jose','Miguel','Juan','Luis','Antonio','Roberto','Fernando','Eduardo','Ricardo','Manuel','Pedro','Jorge','Alberto','Rafael'],
+   fn:['Maria','Carmen','Rosa','Ana','Elena','Lucia','Gloria','Guadalupe','Patricia','Cristina','Veronica','Monica','Adriana','Claudia','Yolanda']},
+  {id:'asian',w:7,
+   skin:['#F2D09A','#EAC285','#E0B470','#F8D8A8','#E8C890','#DDB868'],
+   hairC:['#060200','#0A0300','#040100'],
+   mn:['Wei','Jin','Hyun','Min','Kenji','Hiroshi','Nguyen','Thanh','Ravi','Raj','Mohammed','Ali','Hassan','Takeshi','Minh'],
+   fn:['Li','Mei','Yuki','Hana','Anh','Thu','Priya','Anita','Fatima','Aisha','Layla','Sara','Kim','Jing','Yuna']},
 ];
 const LNAMES={white:['Smith','Johnson','Williams','Brown','Jones','Miller','Davis','Wilson','Anderson','Taylor','Thomas','Harris','Martin','Robinson','Clark'],black:['Washington','Jefferson','Williams','Robinson','Jackson','Brown','Davis','Harris','Thompson','Johnson','Martin','Anderson','Wilson','Thomas','Lewis'],hispanic:['Garcia','Martinez','Rodriguez','Lopez','Gonzalez','Hernandez','Perez','Torres','Ramirez','Flores','Rivera','Morales','Ortiz','Chavez','Ramos'],asian:['Nguyen','Kim','Lee','Park','Wang','Chen','Zhang','Patel','Singh','Sharma','Kumar','Tanaka','Ali','Hassan','Khan']};
 
@@ -103,9 +119,10 @@ function portrait(d,S=120){
   const exL = faceCX - eyeSep;
   const exR = faceCX + eyeSep;
 
-  const nW = faceW*(0.090+R(5)*0.040+(eth==='black'?0.015:eth==='hispanic'?0.008:0));
-  const mW = faceW*(0.170+R(8)*0.070);
-  const lipH = faceW*(0.022+R(9)*0.012+(eth==='black'?0.008:0));
+  const nW = faceW*(0.085+R(5)*0.035+(eth==='black'?0.038:eth==='hispanic'?0.016:eth==='asian'?-0.010:0));
+  const mW = faceW*(0.165+R(8)*0.060)*( eth==='black'?1.12:eth==='hispanic'?1.05:1.0 );
+  const lipH = faceW*(0.020+R(9)*0.012+(eth==='black'?0.018:eth==='hispanic'?0.006:0));
+  const mouthWMult = eth==='black'?1.12:eth==='hispanic'?1.05:1.0;
 
   const wrinkle = Math.max(0,(age-38)/26);
   const bald = male&&age>46&&R(4)>0.55;
@@ -156,13 +173,23 @@ function portrait(d,S=120){
 
   // HAIR (behind face)
   if(!bald){
-    const hairTop = faceTop - faceH*(hairStyle==='long'?0.18:0.12);
     if(hairStyle==='long'){
       p+=`<ellipse cx="${faceCX}" cy="${faceCY-halfH*0.1}" rx="${halfW*1.15}" ry="${halfH*1.22}" fill="${hair}"/>`;
     }else if(hairStyle==='bun'){
       p+=`<ellipse cx="${faceCX}" cy="${faceCY-halfH*0.08}" rx="${halfW*1.10}" ry="${halfH*1.15}" fill="${hair}"/>`;
     }else{
       p+=`<ellipse cx="${faceCX}" cy="${faceTop+faceH*0.08}" rx="${halfW*1.08}" ry="${faceH*0.22}" fill="${hair}"/>`;
+    }
+    // Black hair: add tight curl texture on top
+    if(eth==='black'){
+      const curlY=faceTop-faceH*0.04;
+      for(let ci=0;ci<18;ci++){
+        const cangle=ci*(Math.PI*2/18);
+        const cr=halfW*(0.55+R(90+ci)*0.30);
+        const cx2=faceCX+Math.cos(cangle)*cr*0.55;
+        const cy2=curlY+Math.sin(cangle)*cr*0.28;
+        p+=`<circle cx="${cx2.toFixed(1)}" cy="${cy2.toFixed(1)}" r="${(S*0.028+R(91+ci)*S*0.016).toFixed(1)}" fill="${dk(hair,0)}" opacity="0.85"/>`;
+      }
     }
   }
 
@@ -229,25 +256,42 @@ function portrait(d,S=120){
     }
   }
 
-  // EYES — smaller, correct separation
+  // EYES — ethnicity-specific shapes
   [exL,exR].forEach(ex=>{
     const side = ex<faceCX?-1:1;
+    // Eye dimensions vary by ethnicity
+    const isAsian = eth==='asian';
+    const isBlack = eth==='black';
+    const eW = eyeW*(isAsian?1.05:isBlack?1.08:1.0);
+    const eH = eyeW*(isAsian?0.32+R(72)*0.08:isBlack?0.48+R(72)*0.14:0.50+R(72)*0.18);
+    const ir = Math.min(eW*0.80, eH*1.05);
+
     // Socket shadow
-    p+=`<ellipse cx="${ex}" cy="${eyeY+eyeH*0.2}" rx="${eyeW*1.22}" ry="${eyeH*1.55}" fill="${dk(skin,14)}" opacity="0.36"/>`;
-    // Sclera
-    p+=`<ellipse cx="${ex}" cy="${eyeY}" rx="${eyeW}" ry="${eyeH}" fill="#EDE5D8"/>`;
-    // Iris (clipped to stay in sclera)
-    const ir=Math.min(eyeW*0.80,eyeH*1.05);
+    p+=`<ellipse cx="${ex}" cy="${eyeY+eH*0.25}" rx="${eW*1.22}" ry="${eH*1.6}" fill="${dk(skin,14)}" opacity="0.38"/>`;
+
+    if(isAsian){
+      // Asian: flatter almond shape, inner epicanthal fold covers inner corner
+      p+=`<ellipse cx="${ex}" cy="${eyeY}" rx="${eW}" ry="${eH}" fill="#EDE5D8"/>`;
+      const airL=ex-eW*0.95, airR=ex+eW*0.95;
+      // Epicanthal fold: small skin-colored triangle covers inner corner
+      const innerCornerX = ex+side*eW*(-0.92);
+      p+=`<ellipse cx="${innerCornerX}" cy="${eyeY+eH*0.1}" rx="${eW*0.22}" ry="${eH*0.65}" fill="${skin}"/>`;
+    } else {
+      // Standard sclera
+      p+=`<ellipse cx="${ex}" cy="${eyeY}" rx="${eW}" ry="${eH}" fill="#EDE5D8"/>`;
+    }
+
+    // Iris
     p+=`<circle cx="${ex}" cy="${eyeY}" r="${ir}" fill="${eyeC}"/>`;
-    p+=`<circle cx="${ex}" cy="${eyeY}" r="${ir}" fill="none" stroke="${dk(eyeC,18)}" stroke-width="0.7"/>`;
-    // Pupil
-    p+=`<circle cx="${ex}" cy="${eyeY}" r="${ir*0.50}" fill="#080400"/>`;
+    p+=`<circle cx="${ex}" cy="${eyeY}" r="${ir}" fill="none" stroke="${dk(eyeC,20)}" stroke-width="0.7"/>`;
+    // Pupil — larger for darker eyes
+    p+=`<circle cx="${ex}" cy="${eyeY}" r="${ir*(isBlack||isAsian?0.54:0.50)}" fill="#060300"/>`;
     // Catchlight
     p+=`<ellipse cx="${ex+ir*0.28}" cy="${eyeY-ir*0.30}" rx="${ir*0.16}" ry="${ir*0.14}" fill="white" opacity="0.90"/>`;
     // Upper lash
-    p+=`<path d="M${ex-eyeW*0.96} ${eyeY-eyeH*0.06} Q${ex} ${eyeY-eyeH*1.42} ${ex+eyeW*0.96} ${eyeY-eyeH*0.06}" stroke="#120800" stroke-width="${male?1.3:1.9}" fill="none"/>`;
+    p+=`<path d="M${ex-eW*0.96} ${eyeY-eH*0.06} Q${ex} ${eyeY-eH*1.42} ${ex+eW*0.96} ${eyeY-eH*0.06}" stroke="#100600" stroke-width="${male?1.3:1.9}" fill="none"/>`;
     // Lower lash
-    p+=`<path d="M${ex-eyeW*0.82} ${eyeY+eyeH*0.32} Q${ex} ${eyeY+eyeH*0.88} ${ex+eyeW*0.82} ${eyeY+eyeH*0.32}" stroke="${dk(skin,28)}" stroke-width="0.6" fill="none" opacity="0.44"/>`;
+    p+=`<path d="M${ex-eW*0.82} ${eyeY+eH*0.32} Q${ex} ${eyeY+eH*0.88} ${ex+eW*0.82} ${eyeY+eH*0.32}" stroke="${dk(skin,28)}" stroke-width="0.6" fill="none" opacity="0.42"/>`;
   });
 
   // GLASSES
